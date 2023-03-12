@@ -99,12 +99,14 @@
                                             href="{{route('admin.supplier.edit',[$supplier['id']])}}">
                                             <span class="tio-edit"></span>
                                         </a>
+                                        @if(env('APP_MODE') == 'live')
                                         <a class="btn btn-white mr-1" href="javascript:"
                                             onclick="form_alert('supplier-{{$supplier['id']}}','Want to delete this supplier?')"><span class="tio-delete"></span></a>
                                             <form action="{{route('admin.supplier.delete',[$supplier['id']])}}"
                                                     method="post" id="supplier-{{$supplier['id']}}">
                                                 @csrf @method('delete')
                                             </form>
+                                            @endif
                                     </td>
                                 </tr>
                             @endforeach

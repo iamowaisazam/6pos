@@ -294,6 +294,7 @@ class Helpers
         }
     }
 }
+
 //for translation
 function translate($key)
 {

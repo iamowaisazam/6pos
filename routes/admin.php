@@ -9,7 +9,14 @@ use Illuminate\Support\Facades\Route;
     return view('test', compact('product','quantity'));
  });*/
 
+ Route::fallback(function(){
+    return redirect('admin/auth/login');
+});
+
 Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,function(){
+
+   
+
     Route::group(['namespace' => 'Auth', 'prefix' => 'auth', 'as' => 'auth.'], function(){
         Route::get('login', 'LoginController@login')->name('login');
         Route::post('login', 'LoginController@submit');
@@ -17,7 +24,10 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
     });
 
     Route::group(['middleware' => ['admin']], function(){
+
+        
         Route::get('/', 'DashboardController@dashboard')->name('dashboard');
+        Route::get('lang/{lang}', 'DashboardController@lang')->name('lang');
         Route::post('account-status','DashboardController@account_stats')->name('account-status');
         Route::get('settings', 'SystemController@settings')->name('settings');
         Route::post('settings', 'SystemController@settings_update');

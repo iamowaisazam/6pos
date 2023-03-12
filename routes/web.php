@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::fallback(function(){
-    return redirect('admin/auth/login');
-});
+
 
 Route::get('authentication-failed', function () {
     $errors = [];

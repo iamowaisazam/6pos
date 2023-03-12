@@ -69,12 +69,14 @@
                                     <td>
                                         <a class="btn btn-white mr-1"
                                                    href="{{route('admin.unit.edit',[$unit['id']])}}"><span class="tio-edit"></span></a>
+                                        @if(env('APP_MODE') == 'live')
                                         <a class="btn btn-white mr-1" href="javascript:"
                                                    onclick="form_alert('unit-{{$unit['id']}}','Want to delete this Unit Type?')"><span class="tio-delete"></span></a>
                                                 <form action="{{route('admin.unit.delete',[$unit['id']])}}"
                                                       method="post" id="unit-{{$unit['id']}}">
                                                     @csrf @method('delete')
                                                 </form>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

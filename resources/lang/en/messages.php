@@ -563,4 +563,6 @@
   'Vat_registration_number' => 'Vat registration number',
   'Product Added Successfully' => 'Product Added Successfully',
   'Supplier removed successfully' => 'Supplier removed successfully',
+  'en' => 'En',
+  'ur' => 'Ur',
 );

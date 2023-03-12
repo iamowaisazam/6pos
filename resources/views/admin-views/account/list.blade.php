@@ -88,12 +88,14 @@
                                                 <a class="btn btn-white mr-1" href="{{route('admin.account.edit',[$account['id']])}}">
                                                     <span class="tio-edit"></span>
                                                 </a>
+                                                @if(env('APP_MODE') == 'live')
                                                 <a class="btn btn-white mr-1" href="javascript:"
                                                     onclick="form_alert('account-{{$account['id']}}','Want to delete this account?')"><span class="tio-delete"></span></a>
                                                     <form action="{{route('admin.account.delete',[$account['id']])}}"
                                                             method="post" id="account-{{$account['id']}}">
                                                         @csrf @method('delete')
                                                     </form>
+                                                    @endif
                                             @else
                                             <span>{{\App\CPU\translate('default')}}</span>
                                             @endif

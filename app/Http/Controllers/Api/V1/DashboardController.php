@@ -21,6 +21,7 @@ class DashboardController extends Controller
      */
     public function getIndex(Request $request)
     {
+        
         if ($request->statistics_type == 'overall') {
             $total_payable_debit = Transection::where('tran_type', 'Payable')->where('debit', 1)->sum('amount');
             $total_payable_credit = Transection::where('tran_type', 'Payable')->where('credit', 1)->sum('amount');

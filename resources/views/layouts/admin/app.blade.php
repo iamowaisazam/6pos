@@ -18,6 +18,8 @@
     <!-- select picker -->
     <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/bootstrap-select.min.css"/>
     @stack('css_or_js')
+    <link rel="icon" type="image/x-icon" href="{{asset('public/assets/admin/img/160x160/img1.jpg')}}">
+
 
     <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/custom.css"/>
 

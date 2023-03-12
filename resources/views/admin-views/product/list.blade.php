@@ -117,12 +117,14 @@
                                                    href="{{route('admin.product.edit',[$product['id']])}}"> <span class="tio-edit"></span></a>
                                             </div>
                                             <div class="d-inline">
+                                                @if(env('APP_MODE') == 'live')
                                                 <a class="btn btn-white mr-1" href="javascript:"
                                                    onclick="form_alert('product-{{$product['id']}}','Want to delete this Product ?')"><span class="tio-delete"></span></a>
                                                 <form action="{{route('admin.product.delete',[$product['id']])}}"
                                                       method="post" id="product-{{$product['id']}}">
                                                     @csrf @method('delete')
                                                 </form>
+                                                @endif
                                             </div>
                                             <div class="d-inline">
                                                 <a class="btn btn-white mr-1" data-toggle="tooltip" data-placement="top" title="{{ \App\CPU\translate('generate_barcode') }}" href="{{ route('admin.product.barcode-generate',[$product['id']]) }}" target="_blank">

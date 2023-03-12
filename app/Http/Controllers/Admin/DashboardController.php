@@ -10,9 +10,17 @@ use Carbon\Carbon;
 use App\Models\Account;
 use App\Models\Product;
 use Illuminate\Pagination\Paginator;
+use Session;
 
 class DashboardController extends Controller
 {
+
+    public function lang($id)
+    {
+        
+        Session::put('locale', $id);
+        return back();
+    }
     public function dashboard()
     {
         $total_payable_debit = Transection::where('tran_type','Payable')->where('debit',1)->sum('amount');
@@ -64,7 +72,7 @@ class DashboardController extends Controller
         $accounts = Account::latest()->paginate(Helpers::pagination_limit(), ['*'], 'account');
         //dd($accounts);
        
-
+       
         return view('admin-views.dashboard',compact('account','monthly_income','monthly_expense','accounts','products','last_month_income','last_month_expense','month','total_day'));
     }
     public function account_stats(Request $request)

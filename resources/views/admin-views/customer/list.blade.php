@@ -157,12 +157,14 @@
                                                 href="{{route('admin.customer.edit',[$customer['id']])}}">
                                                 <span class="tio-edit"></span>
                                             </a>
+                                            @if(env('APP_MODE') == 'live')
                                             <a class="btn btn-white mr-1" href="javascript:"
                                                 onclick="form_alert('customer-{{$customer['id']}}','Want to delete this customer?')"><span class="tio-delete"></span></a>
                                                 <form action="{{route('admin.customer.delete',[$customer['id']])}}"
                                                         method="post" id="customer-{{$customer['id']}}">
                                                     @csrf @method('delete')
                                                 </form>
+                                                @endif
                                         @else
                                             <a class="btn btn-white mr-1" href="{{route('admin.customer.view',[$customer['id']])}}"><span class="tio-visible"></span></a>
                                         @endif

@@ -6,7 +6,7 @@
     <!-- Title -->
     <title>{{\App\CPU\translate('admin')}} | {{\App\CPU\translate('login')}}</title>
     <!-- Favicon -->
-    <link rel="shortcut icon" href="">
+    <link rel="shortcut icon" href=""/>
     <!-- Font -->
     <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/google-fonts.css">
     <!-- CSS Implementing Plugins -->
@@ -38,20 +38,30 @@
                         @csrf
                         <!-- Form Group -->
                             <div class="js-form-message form-group">
-                                <input type="email" class="form-control form-control-lg" name="email" id="signinSrEmail"
-                                       tabindex="1" placeholder="{{\App\CPU\translate('email@address.com')}}" aria-label="{{\App\CPU\translate('email@address.com')}}"
-                                       required data-msg="{{\App\CPU\translate('Please_enter_a_valid_email_address.')}}">
+                                <input type="email" 
+                                class="form-control form-control-lg" 
+                                name="email" 
+                                id="signinSrEmail"
+                                tabindex="1" 
+                                placeholder="{{\App\CPU\translate('email@address.com')}}" 
+                                aria-label="{{\App\CPU\translate('email@address.com')}}"
+                                required data-msg="{{\App\CPU\translate('Please_enter_a_valid_email_address.')}}">
                             </div>
                             <!-- End Form Group -->
 
                             <!-- Form Group -->
                             <div class="js-form-message form-group">
                                 <div class="input-group input-group-merge">
-                                    <input type="password" class="js-toggle-password form-control form-control-lg"
-                                           name="password" id="signupSrPassword" placeholder="{{\App\CPU\translate('8+ characters required')}}"
-                                           aria-label="{{\App\CPU\translate('8+ characters required')}}" required
-                                           data-msg="{{\App\CPU\translate('Your password is invalid. Please try again.')}}"
-                                           data-hs-toggle-password-options='{
+                                    <input 
+                                      type="password" 
+                                      class="js-toggle-password form-control form-control-lg"
+                                       name="password" 
+                                       id="signupSrPassword" 
+                                       placeholder="{{\App\CPU\translate('8+ characters required')}}"
+                                       aria-label="{{\App\CPU\translate('8+ characters required')}}" 
+                                       required
+                                       data-msg="{{\App\CPU\translate('Your password is invalid. Please try again.')}}"
+                                       data-hs-toggle-password-options='{
                                                      "target": "#changePassTarget",
                                             "defaultClass": "tio-hidden-outlined",
                                             "showClass": "tio-visible-outlined",
@@ -77,25 +87,7 @@
                         <h4 class="text-capitalize h-four-auth">{{\App\CPU\translate('management_system')}}</h4>
                     </div>
 
-                    <div class="col-md-6 mt-4">
-                        @if(env('APP_MODE')=='demo')
-                            <div class="card-footer">
-                                <div class="row">
-                                    <div class="col-8 col-lg-10">
-                                        <span>{{\App\CPU\translate('Email')}} : {{\App\CPU\translate('admin@admin.com')}}</span><br>
-                                        <span>{{\App\CPU\translate('Password')}} : {{\App\CPU\translate('12345678')}}</span>
-                                    </div>
-                                    <div class="col-4 col-lg-2">
-                                        <button class="btn btn-primary" onclick="copy_cred()"><i
-                                                class="tio-copy"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                <!-- End Card -->
+               </div>
             </div>
         </div>
     </div>

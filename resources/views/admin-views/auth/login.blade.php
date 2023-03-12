@@ -6,7 +6,7 @@
     <!-- Title -->
     <title>{{\App\CPU\translate('admin')}} | {{\App\CPU\translate('login')}}</title>
     <!-- Favicon -->
-    <link rel="shortcut icon" href=""/>
+    <link rel="icon" type="image/x-icon" href="{{asset('public/assets/admin/img/160x160/img1.jpg')}}">
     <!-- Font -->
     <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/google-fonts.css">
     <!-- CSS Implementing Plugins -->

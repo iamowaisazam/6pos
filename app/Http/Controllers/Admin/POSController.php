@@ -528,7 +528,7 @@ class POSController extends Controller
         $transection->tran_type = 'Income';
         $transection->account_id = 1;
         $transection->amount = $order->total;
-        $transection->description = 'POS order';
+        $transection->description = '#'.$order->id.' Order Added';
         $transection->debit = 0;
         $transection->credit = 1;
         $transection->balance = $account->balance + $order->total;
@@ -577,7 +577,7 @@ class POSController extends Controller
             $transection->tran_type = 'Expense';
             $transection->account_id = $account->id;
             $transection->amount = $order->total;
-            $transection->description = $order->id." Order Canceled";
+            $transection->description = '#'.$order->id." Order Canceled";
             $transection->order_id = $order->id;
             $transection->debit = 1;
             $transection->credit = 0;

@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width">
     <!-- Title -->
     <title>@yield('title')</title>
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="">
+   
     <!-- Font -->
     <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/google-fonts.css">
     <!-- CSS Implementing Plugins -->

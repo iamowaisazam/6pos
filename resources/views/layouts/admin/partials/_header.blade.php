@@ -96,6 +96,14 @@
 
                                 <div class="dropdown-divider"></div>
 
+                                <a class="dropdown-item" href="{{route('admin.pos.reset')}}">
+                                    <span class="text-truncate pr-2"
+                                          title="{{\App\CPU\translate('reset')}}">
+                                          {{\App\CPU\translate('Reset')}}</span>
+                                </a>
+
+                                <div class="dropdown-divider"></div>
+
                                 <a class="dropdown-item" href="javascript:" onclick="Swal.fire({
                                     title: 'Do you want to logout?',
                                     showDenyButton: true,

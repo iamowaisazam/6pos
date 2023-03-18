@@ -60,12 +60,15 @@
                         </th>
                         <th class="table-column-pl-0">{{\App\CPU\translate('order')}}</th>
                         <th>{{\App\CPU\translate('date')}}</th>
-                        <th>{{\App\CPU\translate('payment_method')}}</th>
-                        <th>{{\App\CPU\translate('order_amount')}}</th>
-                        <th>{{\App\CPU\translate('total_tax')}}</th>
+                        <th>{{\App\CPU\translate('status')}}</th>
+                        <th>{{\App\CPU\translate('customer')}}</th>
+                        <th>{{\App\CPU\translate('payment_status')}}</th>
+                        {{-- <th>{{\App\CPU\translate('payment_method')}}</th> --}}
+                        <th>{{\App\CPU\translate('subtotal')}}</th>
+                        <th>{{\App\CPU\translate('tax')}}</th>
                         <th>{{\App\CPU\translate('extra_discount')}}</th>
                         <th>{{\App\CPU\translate('coupon_discount')}}</th>
-                        <th>{{\App\CPU\translate('paid_amount')}}</th>
+                        <th>{{\App\CPU\translate('grand_total')}}</th>
                         <th>{{\App\CPU\translate('actions')}}</th>
                     </tr>
                     </thead>
@@ -81,9 +84,26 @@
                                    onclick="print_invoice('{{$order->id}}')">{{$order['id']}}</a>
                             </td>
                             <td>{{date('d M Y',strtotime($order['created_at']))}}</td>
-                            <td>
-                                {{ $order->account?$order->account->account:\App\CPU\translate('customer_balance') }}
+                            <td class="text-center">
+                                @if($order->status == 1)
+                                <a class="btn btn-sm btn-success w-100">{{\App\CPU\translate('complete')}}</a>
+                                @elseif($order->status == 2)
+                                <a class="btn btn-sm btn-danger w-100">{{\App\CPU\translate('canceled')}}</a>
+                                @else
+                                 <a class="btn btn-sm btn-warning w-100">{{\App\CPU\translate('pending')}}</a>
+                                @endif
                             </td>
+                            <td>{{$order->cus->name}}</td>
+                            <td class="text-center" >
+                                @if($order->payment_id == 1)
+                                    {{\App\CPU\translate('paid')}}
+                                @else
+                                    {{\App\CPU\translate('unpaid')}}
+                                @endif
+                            </td>
+                            {{-- <td>
+                                {{ $order->account?$order->account->account:\App\CPU\translate('cash') }}
+                            </td> --}}
                             <td>
                                 {{ $order->order_amount . ' ' . \App\CPU\Helpers::currency_symbol()}}
                             </td>
@@ -91,10 +111,35 @@
                             <td>{{ $order->extra_discount?$order->extra_discount .' '.\App\CPU\Helpers::currency_symbol():0 .' '.\App\CPU\Helpers::currency_symbol() }}</td>
                             <td>{{ $order->coupon_discount_amount?$order->coupon_discount_amount .' '.\App\CPU\Helpers::currency_symbol():0 .' '.\App\CPU\Helpers::currency_symbol() }}</td>
                             <td>{{ $order->order_amount + $order->total_tax - $order->extra_discount - $order->coupon_discount_amount .' '.\App\CPU\Helpers::currency_symbol()}}</td>
+                           
                             <td>
-                                <button class="btn btn-sm btn-white" target="_blank" type="button"
-                                        onclick="print_invoice('{{$order->id}}')"><i
-                                        class="tio-download"></i> {{\App\CPU\translate('invoice')}}</button>
+                                <div class="dropdown">
+                                    <button class="btn btn-info dropdown-toggle" 
+                                      type="button"
+                                      data-toggle="dropdown" 
+                                      aria-expanded="false">{{\App\CPU\translate('action')}}
+                                    </button>
+                                    <div class="dropdown-menu">
+                                      <a class="dropdown-item"  onclick="print_invoice('{{$order->id}}')" >{{\App\CPU\translate('invoice')}}</a>
+                                     
+                                      @if($order->status != 2)
+                                        @if($order->payment_id != 1)
+                                            <a class="dropdown-item" 
+                                            href="{{route('admin.pos.make-payment',$order->id)}}">{{\App\CPU\translate('make_payment')}}</a>
+                                        @endif
+                                      @endif
+                                      
+                                      @if($order->status == 0)
+                                        <a class="dropdown-item" 
+                                         href="{{route('admin.pos.order-complete',$order->id)}}">{{\App\CPU\translate('make_order_completed')}}</a>
+                                      @elseif($order->status == 1)
+                                        <a class="dropdown-item" href="{{route('admin.pos.order-cancel',$order->id)}}">{{\App\CPU\translate('order_cancel')}}</a>
+                                      @else 
+                                    
+                                     @endif
+
+                                    </div>
+                                  </div>
                             </td>
                         </tr>
                     @endforeach

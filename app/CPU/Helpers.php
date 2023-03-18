@@ -4,9 +4,40 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use App\Models\BusinessSetting;
 use App\Models\Currency;
+use App\Models\Transection;
+use App\Models\Customer;
 
 class Helpers
 {
+
+    public static function update_accounts_balance()
+    {
+
+        // $customers = Customer::join('transections','transections.customer_id','=','customers.id');
+
+        $transections = Transection::query()->where('customer_id',7)->get();
+
+        // dd($customers->groupBy('customer_id')->get());
+        $customer = 0;
+
+        foreach ($transections as $key => $value){
+            // if($value['tran_type'] == 'Receivable' | $value['tran_type'] == 'Payable'){
+                if($value->credit == 1){
+                    $customer += $value->amount;
+                }else{
+                    $customer -= $value->amount;
+                }    
+            // }else{
+                // $customer += $value->amount;
+            // }
+        }
+
+        
+        dd($customer);
+
+    }
+
+
     public static function error_processor($validator)
     {
         $err_keeper = [];

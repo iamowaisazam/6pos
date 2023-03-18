@@ -64,7 +64,7 @@
                                 <th>{{\App\CPU\translate('name')}}</th>
                                 <th>{{\App\CPU\translate('phone')}}</th>
                                 <th>{{ \App\CPU\translate('orders') }}</th>
-                                <th class="text-center" >{{ \App\CPU\translate('balance') }}</th>
+                                
                                 <th>{{\App\CPU\translate('action')}}</th>
                             </tr>
                             </thead>
@@ -88,15 +88,6 @@
                                             {{\App\CPU\translate('no_phone')}}
                                     </td>
                                     <td>{{ $walk_customer->orders->count() }}</td>
-                                    <td class="text-center" >
-
-                                        <div class="row">
-                                                <div class="col-6">
-                                                    {{\App\CPU\translate('no_balance')}}
-                                                </div>
-                                            </div>
-
-                                    </td>
                                     <td>
 
                                         <a class="btn btn-white mr-1" href="{{route('admin.customer.view',[$walk_customer['id']])}}"><span class="tio-visible"></span></a>
@@ -126,30 +117,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $customer->orders->count() }}</td>
-                                    <td class="text-center p-5" >
-                                        @if ($customer->id!=0)
-                                            <div class="row">
-                                                <div class="col-5">
-                                                    {{ $customer->balance. ' ' . \App\CPU\Helpers::currency_symbol() }}
-                                                </div>
-                                                <div class="col-5">
-
-                                                    <a class=" btn btn-info p-1 badge"  id="{{ $customer->id }}" onclick="update_customer_balance_cl({{ $customer->id }})" type="button" data-toggle="modal" data-target="#update-customer-balance">
-                                                        <i class="tio-add-circle"></i>
-                                                        {{\App\CPU\translate('add_balance')}}</a>
-
-                                                </div>
-                                            </div>
-                                        @else
-                                        <div class="row">
-                                                <div class="col-6">
-                                                    {{\App\CPU\translate('no_balance')}}
-                                                </div>
-                                            </div>
-
-                                        @endif
-
-                                    </td>
+                                    
                                     <td>
                                         @if ($customer->id!=0)
                                             <a class="btn btn-white mr-1" href="{{route('admin.customer.view',[$customer['id']])}}"><span class="tio-visible"></span></a>
@@ -249,4 +217,13 @@
 
 @push('script_2')
     <script src={{asset("public/assets/admin/js/global.js")}}></script>
+    <script>
+    document.ready(function(){
+
+        $('#customer_balance').attr('disabled',true); 
+
+    });
+      
+    
+    </script>
 @endpush

@@ -413,12 +413,14 @@ class POSController extends Controller
             'view' => view('admin-views.pos._cart', compact('cart_id'))->render()
         ]);
     }
+
+
     public function place_order(Request $request)
     {
-        //dd($request->all());
         $cart_id = session('current_user');
         $user_id = 0;
         $user_type = 'wc';
+       
         if (Str::contains(session('current_user'), 'sc')) {
             $user_id = explode('-', session('current_user'))[1];
             $user_type = 'sc';
@@ -452,7 +454,7 @@ class POSController extends Controller
         $order->user_id = $user_id;
         $order->coupon_code = $cart['coupon_code'] ?? null;
         $order->coupon_discount_title = $cart['coupon_title'] ?? null;
-        $order->payment_id = $request->type;
+        $order->payment_id = null;
         $order->transaction_reference = $request->transaction_reference ?? null;
 
         $order->created_at = now();
@@ -486,141 +488,357 @@ class POSController extends Controller
             }
         }
         $total_price = $product_price - $product_discount;
-        //dd($request->all());
+
         if (isset($cart['ext_discount_type'])) {
             $ext_discount = $this->extra_dis_calculate($cart, $product_price);
             $order->extra_discount = $ext_discount;
         }
 
         $total_tax_amount = $product_tax;
-        try {
-            $order->total_tax = $total_tax_amount;
-            $order->order_amount = $total_price;
+        $order->total_tax = $total_tax_amount;
+        $order->order_amount = $total_price;
+        $order->coupon_discount_amount = $coupon_discount;
+        $order->collected_cash = $request->collected_cash ? $request->collected_cash : $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+        $order->total = $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+        $order->save();
 
-            $order->coupon_discount_amount = $coupon_discount;
-            $order->collected_cash = $request->collected_cash ? $request->collected_cash : $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-            $order->save();
-
-            $customer = Customer::where('id', $user_id)->first();
-            if ($user_id != 0 && $request->type == 0) {
-                $grand_total = $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-
-                if ($request->remaining_balance >= 0) {
-                    $payable_account = Account::find(2);
-                    $payable_transaction = new Transection;
-                    $payable_transaction->tran_type = 'Payable';
-                    $payable_transaction->account_id = $payable_account->id;
-                    $payable_transaction->amount = $grand_total;
-                    $payable_transaction->description = 'POS order';
-                    $payable_transaction->debit = 1;
-                    $payable_transaction->credit = 0;
-                    $payable_transaction->balance = $payable_account->balance - $grand_total;
-                    $payable_transaction->date = date("Y/m/d");
-                    $payable_transaction->customer_id = $customer->id;
-                    $payable_transaction->order_id = $order_id;
-                    $payable_transaction->save();
-
-                    $payable_account->total_out = $payable_account->total_out + $grand_total;
-                    $payable_account->balance = $payable_account->balance - $grand_total;
-                    $payable_account->save();
-                } else {
-
-                    if ($customer->balance > 0) {
-                        $payable_account = Account::find(2);
-                        $payable_transaction = new Transection;
-                        $payable_transaction->tran_type = 'Payable';
-                        $payable_transaction->account_id = $payable_account->id;
-                        $payable_transaction->amount = $customer->balance;
-                        $payable_transaction->description = 'POS order';
-                        $payable_transaction->debit = 1;
-                        $payable_transaction->credit = 0;
-                        $payable_transaction->balance = $payable_account->balance - $customer->balance;
-                        $payable_transaction->date = date("Y/m/d");
-                        $payable_transaction->customer_id = $customer->id;
-                        $payable_transaction->order_id = $order_id;
-                        $payable_transaction->save();
-
-                        $payable_account->total_out = $payable_account->total_out + $customer->balance;
-                        $payable_account->balance = $payable_account->balance - $customer->balance;
-                        $payable_account->save();
-
-                        $receivable_account = Account::find(3);
-                        $receivable_transaction = new Transection;
-                        $receivable_transaction->tran_type = 'Receivable';
-                        $receivable_transaction->account_id = $receivable_account->id;
-                        $receivable_transaction->amount = -$request->remaining_balance;
-                        $receivable_transaction->description = 'POS order';
-                        $receivable_transaction->debit = 0;
-                        $receivable_transaction->credit = 1;
-                        $receivable_transaction->balance = $receivable_account->balance - $request->remaining_balance;
-                        $receivable_transaction->date = date("Y/m/d");
-                        $receivable_transaction->customer_id = $customer->id;
-                        $receivable_transaction->order_id = $order_id;
-                        $receivable_transaction->save();
-
-                        $receivable_account->total_in = $receivable_account->total_in - $request->remaining_balance;
-                        $receivable_account->balance = $receivable_account->balance - $request->remaining_balance;
-                        $receivable_account->save();
-                    } else {
-
-                        $receivable_account = Account::find(3);
-                        $receivable_transaction = new Transection;
-                        $receivable_transaction->tran_type = 'Receivable';
-                        $receivable_transaction->account_id = $receivable_account->id;
-                        $receivable_transaction->amount = $grand_total;
-                        $receivable_transaction->description = 'POS order';
-                        $receivable_transaction->debit = 0;
-                        $receivable_transaction->credit = 1;
-                        $receivable_transaction->balance = $receivable_account->balance + $grand_total;
-                        $receivable_transaction->date = date("Y/m/d");
-                        $receivable_transaction->customer_id = $customer->id;
-                        $receivable_transaction->order_id = $order_id;
-                        $receivable_transaction->save();
-
-                        $receivable_account->total_in = $receivable_account->total_in + $grand_total;
-                        $receivable_account->balance = $receivable_account->balance + $grand_total;
-                        $receivable_account->save();
-                    }
-                }
-
-                $customer->balance = $request->remaining_balance;
-                $customer->save();
-            }
-            //transection start
-            if ($request->type != 0) {
-                $account = Account::find($request->type);
-                $transection = new Transection;
-                $transection->tran_type = 'Income';
-                $transection->account_id = $request->type;
-                $transection->amount = $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-                $transection->description = 'POS order';
-                $transection->debit = 0;
-                $transection->credit = 1;
-                $transection->balance = $account->balance + $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-                $transection->date = date("Y/m/d");
-                $transection->customer_id = $customer->id;
-                $transection->order_id = $order_id;
-                $transection->save();
-                //transection end
-                //account
-                $account->balance = $account->balance + $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-                $account->total_in = $account->total_in + $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-                $account->save();
-            }
-            foreach ($order_details as $key => $item) {
-                $order_details[$key]['order_id'] = $order->id;
-            }
-            OrderDetail::insert($order_details);
-
-            session()->forget($cart_id);
-            session(['last_order' => $order->id]);
-            Toastr::success(translate('order_placed_successfully'));
-            return back();
-        } catch (\Exception $e) {
-            Toastr::warning(translate('failed_to_place_order'));
-            return back();
+        foreach ($order_details as $key => $item) {
+            $order_details[$key]['order_id'] = $order->id;
         }
+
+        OrderDetail::insert($order_details);
+        session()->forget($cart_id);
+        session(['last_order' => $order->id]);
+        Toastr::success(translate('order_placed_successfully'));
+        // $this->make_payment($order->id);
+        return back();
+
     }
+
+   
+
+    public function make_payment($id)
+    {
+
+        $order = Order::find($id);
+        $account = Account::find(1);
+        $order->payment_id =1;
+
+        $transection = new Transection;
+        $transection->tran_type = 'Income';
+        $transection->account_id = 1;
+        $transection->amount = $order->total;
+        $transection->description = 'POS order';
+        $transection->debit = 0;
+        $transection->credit = 1;
+        $transection->balance = $account->balance + $order->total;
+        $transection->date = date("Y/m/d");
+        $transection->customer_id = $order->customer_id;
+        $transection->order_id = $order->id;
+        $transection->save();
+
+        $account->balance = $account->balance +  $order->total;
+        $account->total_in = $account->total_in + $order->total;
+        $account->save();
+        $order->save();
+
+        Toastr::success(translate('Payment Generated successfully'));
+        return back();
+    }
+
+    public function order_complete($id)
+    {
+     
+        $order = Order::find($id);
+        $order->status = 1;
+        $order->save();
+        Toastr::success(translate('Order Complete successfully'));
+        return back();
+
+    }
+
+
+    public function order_cancel($id)
+    {
+     
+        $order = Order::find($id);
+        $order->status = 2;
+
+        if($order->payment_id == 1){
+
+            $account = Account::find(1);
+            if($account->balance < $order->total)
+            {
+                Toastr::warning(\App\CPU\translate('you_do_not_have_sufficent_balance'));
+                return back();
+            }
+
+            $transection = new Transection;
+            $transection->tran_type = 'Expense';
+            $transection->account_id = $account->id;
+            $transection->amount = $order->total;
+            $transection->description = $order->id." Order Canceled";
+            $transection->order_id = $order->id;
+            $transection->debit = 1;
+            $transection->credit = 0;
+            $transection->balance = $account->balance - $order->total;
+            $transection->date =  date("Y/m/d");
+            $transection->save();
+
+            $account->total_out = $account->total_out + $order->total;
+            $account->balance = $account->balance - $order->total;
+            $account->save();
+
+        }
+
+        $order->payment_id = 1;
+        $order->save();
+        $details = OrderDetail::where('order_id',$id)->get();
+        foreach ($details as $key => $value) {
+            $product  = Product::find($value->product_id);
+            $product->quantity = $product->quantity + $value->quantity;
+            $product->save();
+        }
+
+        Toastr::success(translate('Order Cancled successfully'));
+        return back();
+
+    }
+
+
+
+
+    // public function place_order(Request $request)
+    // {
+       
+    //     $cart_id = session('current_user');
+    //     $user_id = 0;
+    //     $user_type = 'wc';
+       
+    //     if (Str::contains(session('current_user'), 'sc')) {
+    //         $user_id = explode('-', session('current_user'))[1];
+    //         $user_type = 'sc';
+    //     }
+    //     if (session($cart_id)) {
+    //         if (count(session($cart_id)) < 1) {
+    //             Toastr::error(translate('cart_empty_warning'));
+    //             return back();
+    //         }
+    //     } else {
+    //         Toastr::error(translate('cart_empty_warning'));
+    //         return back();
+    //     }
+    //     $cart = session($cart_id);
+    //     $coupon_code = 0;
+    //     $product_price = 0;
+    //     $order_details = [];
+    //     $product_discount = 0;
+    //     $product_tax = 0;
+    //     $ext_discount = 0;
+    //     $coupon_discount = $cart['coupon_discount'] ?? 0;
+
+    //     $order_id = 100000 + Order::all()->count() + 1;
+    //     if (Order::find($order_id)) {
+    //         $order_id = Order::orderBy('id', 'DESC')->first()->id + 1;
+    //     }
+
+    //     $order = new Order();
+    //     $order->id = $order_id;
+
+    //     $order->user_id = $user_id;
+    //     $order->coupon_code = $cart['coupon_code'] ?? null;
+    //     $order->coupon_discount_title = $cart['coupon_title'] ?? null;
+    //     $order->payment_id = $request->type;
+    //     $order->transaction_reference = $request->transaction_reference ?? null;
+
+    //     $order->created_at = now();
+    //     $order->updated_at = now();
+
+    //     foreach ($cart as $c) {
+    //         if (is_array($c)) {
+    //             $product = Product::find($c['id']);
+    //             if ($product) {
+    //                 $price = $c['price'];
+    //                 $or_d = [
+    //                     'product_id' => $c['id'],
+    //                     'product_details' => $product,
+    //                     'quantity' => $c['quantity'],
+    //                     'price' => $product->selling_price,
+    //                     'tax_amount' => Helpers::tax_calculate($product, $product->selling_price),
+    //                     'discount_on_product' => Helpers::discount_calculate($product, $product->selling_price),
+    //                     'discount_type' => 'discount_on_product',
+    //                     'created_at' => now(),
+    //                     'updated_at' => now()
+    //                 ];
+    //                 $product_price += $price * $c['quantity'];
+    //                 $product_discount += $c['discount'] * $c['quantity'];
+    //                 $product_tax += $c['tax'] * $c['quantity'];
+    //                 $order_details[] = $or_d;
+
+    //                 $product->quantity = $product->quantity - $c['quantity'];
+    //                 $product->order_count++;
+    //                 $product->save();
+    //             }
+    //         }
+    //     }
+    //     $total_price = $product_price - $product_discount;
+    //     //dd($request->all());
+    //     if (isset($cart['ext_discount_type'])) {
+    //         $ext_discount = $this->extra_dis_calculate($cart, $product_price);
+    //         $order->extra_discount = $ext_discount;
+    //     }
+
+    //     $total_tax_amount = $product_tax;
+    //     try {
+    //         $order->total_tax = $total_tax_amount;
+    //         $order->order_amount = $total_price;
+
+    //         $order->coupon_discount_amount = $coupon_discount;
+    //         $order->collected_cash = $request->collected_cash ? $request->collected_cash : $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+    //         $order->save();
+
+    //         $customer = Customer::where('id', $user_id)->first();
+    //         if ($user_id != 0 && $request->type == 0) {
+    //             $grand_total = $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+
+    //             if ($request->remaining_balance >= 0) {
+    //                 $payable_account = Account::find(2);
+    //                 $payable_transaction = new Transection;
+    //                 $payable_transaction->tran_type = 'Payable';
+    //                 $payable_transaction->account_id = $payable_account->id;
+    //                 $payable_transaction->amount = $grand_total;
+    //                 $payable_transaction->description = 'POS order';
+    //                 $payable_transaction->debit = 1;
+    //                 $payable_transaction->credit = 0;
+    //                 $payable_transaction->balance = $payable_account->balance - $grand_total;
+    //                 $payable_transaction->date = date("Y/m/d");
+    //                 $payable_transaction->customer_id = $customer->id;
+    //                 $payable_transaction->order_id = $order_id;
+    //                 $payable_transaction->save();
+
+    //                 $payable_account->total_out = $payable_account->total_out + $grand_total;
+    //                 $payable_account->balance = $payable_account->balance - $grand_total;
+    //                 $payable_account->save();
+    //             } else {
+
+    //                 if ($customer->balance > 0) {
+    //                     $payable_account = Account::find(2);
+    //                     $payable_transaction = new Transection;
+    //                     $payable_transaction->tran_type = 'Payable';
+    //                     $payable_transaction->account_id = $payable_account->id;
+    //                     $payable_transaction->amount = $customer->balance;
+    //                     $payable_transaction->description = 'POS order';
+    //                     $payable_transaction->debit = 1;
+    //                     $payable_transaction->credit = 0;
+    //                     $payable_transaction->balance = $payable_account->balance - $customer->balance;
+    //                     $payable_transaction->date = date("Y/m/d");
+    //                     $payable_transaction->customer_id = $customer->id;
+    //                     $payable_transaction->order_id = $order_id;
+    //                     $payable_transaction->save();
+
+    //                     $payable_account->total_out = $payable_account->total_out + $customer->balance;
+    //                     $payable_account->balance = $payable_account->balance - $customer->balance;
+    //                     $payable_account->save();
+
+    //                     $receivable_account = Account::find(3);
+    //                     $receivable_transaction = new Transection;
+    //                     $receivable_transaction->tran_type = 'Receivable';
+    //                     $receivable_transaction->account_id = $receivable_account->id;
+    //                     $receivable_transaction->amount = -$request->remaining_balance;
+    //                     $receivable_transaction->description = 'POS order';
+    //                     $receivable_transaction->debit = 0;
+    //                     $receivable_transaction->credit = 1;
+    //                     $receivable_transaction->balance = $receivable_account->balance - $request->remaining_balance;
+    //                     $receivable_transaction->date = date("Y/m/d");
+    //                     $receivable_transaction->customer_id = $customer->id;
+    //                     $receivable_transaction->order_id = $order_id;
+    //                     $receivable_transaction->save();
+
+    //                     $receivable_account->total_in = $receivable_account->total_in - $request->remaining_balance;
+    //                     $receivable_account->balance = $receivable_account->balance - $request->remaining_balance;
+    //                     $receivable_account->save();
+    //                 } else {
+
+    //                     $receivable_account = Account::find(3);
+    //                     $receivable_transaction = new Transection;
+    //                     $receivable_transaction->tran_type = 'Receivable';
+    //                     $receivable_transaction->account_id = $receivable_account->id;
+    //                     $receivable_transaction->amount = $grand_total;
+    //                     $receivable_transaction->description = 'POS order';
+    //                     $receivable_transaction->debit = 0;
+    //                     $receivable_transaction->credit = 1;
+    //                     $receivable_transaction->balance = $receivable_account->balance + $grand_total;
+    //                     $receivable_transaction->date = date("Y/m/d");
+    //                     $receivable_transaction->customer_id = $customer->id;
+    //                     $receivable_transaction->order_id = $order_id;
+    //                     $receivable_transaction->save();
+
+    //                     $receivable_account->total_in = $receivable_account->total_in + $grand_total;
+    //                     $receivable_account->balance = $receivable_account->balance + $grand_total;
+    //                     $receivable_account->save();
+    //                 }
+    //             }
+
+    //             $customer->balance = $request->remaining_balance;
+    //             $customer->save();
+    //         }
+    //         //transection start
+    //         if ($request->type != 0) {
+    //             $account = Account::find($request->type);
+    //             $transection = new Transection;
+    //             $transection->tran_type = 'Income';
+    //             $transection->account_id = $request->type;
+    //             $transection->amount = $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+    //             $transection->description = 'POS order';
+    //             $transection->debit = 0;
+    //             $transection->credit = 1;
+    //             $transection->balance = $account->balance + $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+    //             $transection->date = date("Y/m/d");
+    //             $transection->customer_id = $customer->id;
+    //             $transection->order_id = $order_id;
+    //             $transection->save();
+    //             //transection end
+    //             //account
+    //             $account->balance = $account->balance + $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+    //             $account->total_in = $account->total_in + $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+    //             $account->save();
+    //         }
+    //         foreach ($order_details as $key => $item) {
+    //             $order_details[$key]['order_id'] = $order->id;
+    //         }
+    //         OrderDetail::insert($order_details);
+
+    //         session()->forget($cart_id);
+    //         session(['last_order' => $order->id]);
+    //         Toastr::success(translate('order_placed_successfully'));
+    //         return back();
+    //     } catch (\Exception $e) {
+    //         Toastr::warning(translate('failed_to_place_order'));
+    //         return back();
+    //     }
+    // }
+
+
+    public function reset()
+    {   
+
+        Order::query()->delete();
+        OrderDetail::query()->delete();
+        Transection::query()->delete();
+        Account::query()->update([
+            'balance' => 0,
+            'total_in' => 0,
+            'total_out' => 0,
+        ]);
+
+        return back();
+    }
+
+
+   
+
+    
+  
 
     public function search_product(Request $request)
     {

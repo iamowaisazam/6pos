@@ -23,6 +23,9 @@ class DashboardController extends Controller
     }
     public function dashboard()
     {
+
+        // Helpers::update_accounts_balance();
+
         $total_payable_debit = Transection::where('tran_type','Payable')->where('debit',1)->sum('amount');
         $total_payable_credit = Transection::where('tran_type','Payable')->where('credit',1)->sum('amount');
         $total_payable = $total_payable_credit - $total_payable_debit;

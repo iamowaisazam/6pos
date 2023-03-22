@@ -581,4 +581,12 @@
   'Payment Generated successfully' => 'Payment Generated successfully',
   'Reset' => 'Reset',
   'Order Cancled successfully' => 'Order Cancled successfully',
+  'add_recievable' => 'Add recievable',
+  'Customer Receivable Added successfully' => 'Customer Receivable Added successfully',
+  'reports' => 'Reports',
+  'Add new Payable' => 'Add new Payable',
+  'payable_balance_transfer_rec' => 'Payable balance transfer rec',
+  'customers_report' => 'Customers report',
+  'In' => 'In',
+  'Out' => 'Out',
 );

@@ -162,6 +162,7 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::post('update/{id}', 'CustomerController@update')->name('update');
             Route::delete('delete/{id}', 'CustomerController@delete')->name('delete');
             Route::post('update-balance','CustomerController@update_balance')->name('update-balance');
+            Route::post('add_recievable','CustomerController@add_recievable')->name('add_recievable');
             Route::get('transaction-list/{id}', 'CustomerController@transaction_list')->name('transaction-list');
         });
         //supplier
@@ -199,5 +200,10 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::get('status/{id}/{status}', 'CouponController@status')->name('status');
             Route::delete('delete/{id}', 'CouponController@delete')->name('delete');
         });
+
+        Route::group(['prefix' => 'reports', 'as' => 'reports.'], function () {
+            Route::get('customers', 'ReportController@customers')->name('customers');
+        });
+
     });
 });

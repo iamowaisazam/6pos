@@ -341,6 +341,35 @@
                             </ul>
                         </li>
                         <!-- Supplier end Pages -->
+
+                        <li class="nav-item">
+                            <small
+                                class="nav-subtitle">{{\App\CPU\translate('reports')}}</small>
+                            <small class="tio-more-horizontal nav-subtitle-replacer"></small>
+                        </li>
+
+                        <li class="navbar-vertical-aside-has-menu {{Request::is('admin/product*')?'active':''}}">
+                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" 
+                            href="javascript:">
+                                <i class="tio-premium-outlined nav-icon"></i>
+                                <span
+                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{\App\CPU\translate('reports')}}</span>
+                            </a>
+                            <ul class="js-navbar-vertical-aside-submenu nav nav-sub {{Request::is('admin/reports*')?'d-block':''}}">
+                                <li class="nav-item {{Request::is('admin/reports/customers')?'active':''}}">
+                                    <a class="nav-link " href="{{route('admin.reports.customers')}}"
+                                       title="{{\App\CPU\translate('customers')}}">
+                                        <span class="tio-circle nav-indicator-icon"></span>
+                                        <span class="text-truncate">{{\App\CPU\translate('customers')}}</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+                        
+
+
                         <li class="nav-item">
                             <small
                                 class="nav-subtitle">{{\App\CPU\translate('shop_setting_section')}}</small>

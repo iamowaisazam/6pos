@@ -18,6 +18,38 @@ class CustomerController extends Controller
     {
         return view('admin-views.customer.index');
     }
+
+
+    public function add_recievable(Request $request){
+
+             $customer = Customer::find($request->customer_id);
+            $receivable_account = Account::find(3);
+            $receivable_transaction = new Transection;
+            $receivable_transaction->tran_type = 'Receivable';
+            $receivable_transaction->account_id = $receivable_account->id;
+            $receivable_transaction->amount = $request->amount;
+            $receivable_transaction->description = 'Customer Receivable';
+            $receivable_transaction->debit = 0;
+            $receivable_transaction->credit = 1;
+            $receivable_transaction->balance = $receivable_account->balance + $request->amount;
+            $receivable_transaction->date = date("Y/m/d");
+            $receivable_transaction->customer_id = $request->customer_id;
+            $receivable_transaction->order_id = null;
+            $receivable_transaction->save();
+
+            $receivable_account->total_in = $receivable_account->total_in + $request->amount;
+            $receivable_account->balance = $receivable_account->balance + $request->amount;
+            $receivable_account->save();
+
+            $customer->balance = $customer->balance - $request->amount;
+            $customer->save();
+
+            Toastr::success(translate('Customer Receivable Added successfully'));
+            return back();
+
+    }
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -50,6 +82,7 @@ class CustomerController extends Controller
     {
         $accounts = Account::orderBy('id')->get();
         $query_param = [];
+
         $search = $request['search'];
         if ($request->has('search')) {
             $key = explode(' ', $request['search']);
@@ -63,8 +96,10 @@ class CustomerController extends Controller
         } else {
             $customers = new Customer;
         }
+
         $walk_customer = $customers->where('id',0)->first();
         $customers = $customers->latest()->paginate(Helpers::pagination_limit())->appends($query_param);
+        
         return view('admin-views.customer.list',compact('customers','accounts','search','walk_customer'));
     }
     public function view(Request $request, $id)

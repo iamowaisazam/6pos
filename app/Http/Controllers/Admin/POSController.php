@@ -831,6 +831,10 @@ class POSController extends Controller
             'total_out' => 0,
         ]);
 
+        Customer::query()->update([
+            'balance' => 0,
+        ]);
+
         return back();
     }
 

@@ -65,6 +65,14 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
              Route::delete('delete/{id}', 'UnitController@delete')->name('delete');
         });
 
+        
+        //Sale Invoice
+        Route::get('saleinvoices/index','SaleInvoiceController@index')->name('saleinvoices.index');
+        Route::post('saleinvoices/store', 'SaleInvoiceController@store')->name('saleinvoices.store');
+        Route::get('saleinvoices/edit/{id}', 'SaleInvoiceController@edit')->name('saleinvoices.edit');
+        Route::post('saleinvoices/update/{id}', 'SaleInvoiceController@update')->name('saleinvoices.update');
+        Route::get('saleinvoices/delete/{id}', 'SaleInvoiceController@delete')->name('saleinvoices.delete');
+
         Route::group(['prefix' => 'product', 'as' => 'product.'], function () {
             Route::get('add', 'ProductController@index')->name('add');
             Route::post('store', 'ProductController@store')->name('store');
@@ -203,6 +211,7 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
 
         Route::group(['prefix' => 'reports', 'as' => 'reports.'], function () {
             Route::get('customers', 'ReportController@customers')->name('customers');
+            Route::get('customers/{id}', 'ReportController@customers_detail')->name('customers_detail');
         });
 
     });

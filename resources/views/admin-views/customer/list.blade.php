@@ -30,6 +30,7 @@
                         <div class="row justify-content-between align-items-center flex-grow-1">
                             <div class="col-12 col-sm-7 col-md-6 col-lg-4 col-xl-6 mb-3 mb-sm-0">
                                 <form action="{{url()->current()}}" method="GET">
+                                  
                                     <!-- Search -->
                                     <div class="input-group input-group-merge input-group-flush">
                                         <div class="input-group-prepend">

@@ -417,6 +417,7 @@ class POSController extends Controller
 
     public function place_order(Request $request)
     {
+
         $cart_id = session('current_user');
         $user_id = 0;
         $user_type = 'wc';
@@ -506,34 +507,34 @@ class POSController extends Controller
             $order_details[$key]['order_id'] = $order->id;
         }
 
+ 
         OrderDetail::insert($order_details);
         session()->forget($cart_id);
         session(['last_order' => $order->id]);
         Toastr::success(translate('order_placed_successfully'));
-        // $this->make_payment($order->id);
         return back();
 
     }
 
    
 
-    public function make_payment($id)
+    public function make_payment(Request $request,$id)
     {
 
         $order = Order::find($id);
-        $account = Account::find(1);
+        $account = Account::find($request->account_id);
         $order->payment_id =1;
 
         $transection = new Transection;
         $transection->tran_type = 'Income';
-        $transection->account_id = 1;
+        $transection->account_id = $account->id;
         $transection->amount = $order->total;
-        $transection->description = '#'.$order->id.' Order Added';
+        $transection->description = 'Payment Recieved Order #'.$order->id." ".$request->description;
         $transection->debit = 0;
         $transection->credit = 1;
         $transection->balance = $account->balance + $order->total;
-        $transection->date = date("Y/m/d");
-        $transection->customer_id = $order->customer_id;
+        $transection->date = $request->date;
+        $transection->customer_id = $order->user_id;
         $transection->order_id = $order->id;
         $transection->save();
 
@@ -541,6 +542,10 @@ class POSController extends Controller
         $account->total_in = $account->total_in + $order->total;
         $account->save();
         $order->save();
+
+        $customer = Customer::find($order->user_id);
+        $customer->balance = $customer->balance - $order->total;
+        $customer->save();
 
         Toastr::success(translate('Payment Generated successfully'));
         return back();
@@ -552,47 +557,51 @@ class POSController extends Controller
         $order = Order::find($id);
         $order->status = 1;
         $order->save();
+
+
+        $customer = Customer::find($order->user_id);
+        $customer->balance = $customer->balance - $order->total;
+        $customer->save();
+
         Toastr::success(translate('Order Complete successfully'));
         return back();
-
     }
 
 
-    public function order_cancel($id)
+    public function order_cancel(Request $request,$id)
     {
-     
+
         $order = Order::find($id);
         $order->status = 2;
 
         if($order->payment_id == 1){
 
-            $account = Account::find(1);
-            if($account->balance < $order->total)
-            {
-                Toastr::warning(\App\CPU\translate('you_do_not_have_sufficent_balance'));
-                return back();
-            }
-
-            $transection = new Transection;
-            $transection->tran_type = 'Expense';
-            $transection->account_id = $account->id;
-            $transection->amount = $order->total;
-            $transection->description = '#'.$order->id." Order Canceled";
-            $transection->order_id = $order->id;
-            $transection->debit = 1;
-            $transection->credit = 0;
-            $transection->balance = $account->balance - $order->total;
-            $transection->date =  date("Y/m/d");
-            $transection->save();
-
+            $account = Account::find($request->account_id);
             $account->total_out = $account->total_out + $order->total;
             $account->balance = $account->balance - $order->total;
             $account->save();
 
+            $transection = new Transection;
+            $transection->tran_type = 'Income';
+            $transection->account_id = $account->id;
+            $transection->amount = $order->total;
+            $transection->description = "Payment Refund".'#'.$order->id." Order Canceled ".$request->description;
+            $transection->order_id = $order->id;
+            $transection->debit = 1;
+            $transection->credit = 0;
+            $transection->customer_id = $order->user_id;
+            $transection->balance = $account->balance - $order->total;
+            $transection->date = $request->date;
+            $transection->save();
         }
 
         $order->payment_id = 1;
         $order->save();
+
+        $customer = Customer::find($order->user_id);
+        $customer->balance = $customer->balance + $order->total;
+        $customer->save();
+
         $details = OrderDetail::where('order_id',$id)->get();
         foreach ($details as $key => $value) {
             $product  = Product::find($value->product_id);
@@ -901,7 +910,9 @@ class POSController extends Controller
             $orders = Order::latest()->paginate(Helpers::pagination_limit())->appends($search);
         }
 
-        return view('admin-views.pos.order.list', compact('orders', 'search'));
+        $accounts = Account::all();
+
+        return view('admin-views.pos.order.list', compact('orders', 'search','accounts'));
     }
 
     public function generate_invoice($id)

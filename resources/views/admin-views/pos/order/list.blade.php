@@ -122,24 +122,34 @@
                                     <div class="dropdown-menu">
                                       <a class="dropdown-item"  onclick="print_invoice('{{$order->id}}')" >{{\App\CPU\translate('invoice')}}</a>
                                      
-                                      @if($order->status != 2)
+                                      @if($order->status == 1)
                                         @if($order->payment_id != 1)
-                                            <a class="dropdown-item" 
-                                            href="{{route('admin.pos.make-payment',$order->id)}}">{{\App\CPU\translate('make_payment')}}</a>
+                                            <a class="dropdown-item"
+                                              type="button" 
+                                              data-toggle="modal" 
+                                              data-target="#add_recievable{{$order->id}}" 
+                                            >{{\App\CPU\translate('make_payment')}}</a>
                                         @endif
                                       @endif
                                       
                                       @if($order->status == 0)
                                         <a class="dropdown-item" 
                                          href="{{route('admin.pos.order-complete',$order->id)}}">{{\App\CPU\translate('make_order_completed')}}</a>
-                                      @elseif($order->status == 1)
-                                        <a class="dropdown-item" href="{{route('admin.pos.order-cancel',$order->id)}}">{{\App\CPU\translate('order_cancel')}}</a>
-                                      @else 
-                                    
+                                        @elseif($order->status == 1)
+                                            <a class="dropdown-item" 
+                                            type="button" 
+                                            data-toggle="modal" 
+                                            data-target="#order_cancel{{$order->id}}" 
+                                            href="{{route('admin.pos.order-cancel',$order->id)}}">{{\App\CPU\translate('order_cancel')}}</a>
+                                        @else 
                                      @endif
 
                                     </div>
                                   </div>
+
+                                  @include('admin-views.partials.make_customer_payment')
+                                  @include('admin-views.partials.order_cancel_form')
+
                             </td>
                         </tr>
                     @endforeach

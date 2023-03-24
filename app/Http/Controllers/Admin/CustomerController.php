@@ -22,17 +22,17 @@ class CustomerController extends Controller
 
     public function add_recievable(Request $request){
 
-             $customer = Customer::find($request->customer_id);
-            $receivable_account = Account::find(3);
+            $customer = Customer::find($request->customer_id);
+            // $receivable_account = Account::find(3);
             $receivable_transaction = new Transection;
-            $receivable_transaction->tran_type = 'Receivable';
+            $receivable_transaction->tran_type = 'Income';
             $receivable_transaction->account_id = $receivable_account->id;
             $receivable_transaction->amount = $request->amount;
-            $receivable_transaction->description = 'Customer Receivable';
+            $receivable_transaction->description = $request->description;
             $receivable_transaction->debit = 0;
             $receivable_transaction->credit = 1;
             $receivable_transaction->balance = $receivable_account->balance + $request->amount;
-            $receivable_transaction->date = date("Y/m/d");
+            $receivable_transaction->date = $request->date;
             $receivable_transaction->customer_id = $request->customer_id;
             $receivable_transaction->order_id = null;
             $receivable_transaction->save();
@@ -186,153 +186,42 @@ class CustomerController extends Controller
         Toastr::success(translate('Customer removed successfully'));
         return back();
     }
+
     public function update_balance(Request $request)
     {
+        
         $request->validate([
             'customer_id'=>'required',
             'amount' => 'required',
             'account_id'=> 'required',
             'date' => 'required',
         ]);
+    
+
         $customer = Customer::find($request->customer_id);
-
-        if($customer->balance >= 0)
-        {
-            $account = Account::find(2);
-            $transection = new Transection;
-            $transection->tran_type = 'Payable';
-            $transection->account_id = $account->id;
-            $transection->amount = $request->amount;
-            $transection->description = $request->description;
-            $transection->debit = 0;
-            $transection->credit = 1;
-            $transection->balance = $account->balance + $request->amount;
-            $transection->date = $request->date;
-            $transection->customer_id = $request->customer_id;
-            $transection->save();
-
-            $account->total_in = $account->total_in + $request->amount;
-            $account->balance = $account->balance + $request->amount;
-            $account->save();
-
-            $receive_account = Account::find($request->account_id);
-            $receive_transection = new Transection;
-            $receive_transection->tran_type = 'Income';
-            $receive_transection->account_id = $receive_account->id;
-            $receive_transection->amount = $request->amount;
-            $receive_transection->description = $request->description;
-            $receive_transection->debit = 0;
-            $receive_transection->credit = 1;
-            $receive_transection->balance = $receive_account->balance + $request->amount;
-            $receive_transection->date = $request->date;
-            $receive_transection->customer_id = $request->customer_id;
-            $receive_transection->save();
-
-            $receive_account->total_in = $receive_account->total_in + $request->amount;
-            $receive_account->balance = $receive_account->balance + $request->amount;
-            $receive_account->save();
-        }else{
-            $remaining_balance = $customer->balance + $request->amount;
-
-            if($remaining_balance >= 0)
-            {
-                if($remaining_balance!=0)
-                {
-                    $payable_account = Account::find(2);
-                    $payable_transection = new Transection;
-                    $payable_transection->tran_type = 'Payable';
-                    $payable_transection->account_id = $payable_account->id;
-                    $payable_transection->amount = $remaining_balance;
-                    $payable_transection->description = $request->description;
-                    $payable_transection->debit = 0;
-                    $payable_transection->credit = 1;
-                    $payable_transection->balance = $payable_account->balance + $remaining_balance;
-                    $payable_transection->date = $request->date;
-                    $payable_transection->customer_id = $request->customer_id;
-                    $payable_transection->save();
-
-                    $payable_account->total_in = $payable_account->total_in + $remaining_balance;
-                    $payable_account->balance = $payable_account->balance + $remaining_balance;
-                    $payable_account->save();
-                }
-
-                $receive_account = Account::find($request->account_id);
-                $receive_transection = new Transection;
-                $receive_transection->tran_type = 'Income';
-                $receive_transection->account_id = $request->account_id;
-                $receive_transection->amount = $request->amount;
-                $receive_transection->description = $request->description;
-                $receive_transection->debit = 0;
-                $receive_transection->credit = 1;
-                $receive_transection->balance = $receive_account->balance + $request->amount;
-                $receive_transection->date = $request->date;
-                $receive_transection->customer_id = $request->customer_id;
-                $receive_transection->save();
-
-                $receive_account->total_in = $receive_account->total_in + $request->amount;
-                $receive_account->balance = $receive_account->balance + $request->amount;
-                $receive_account->save();
-
-
-                $receivable_account = Account::find(3);
-                $receivable_transaction = new Transection;
-                $receivable_transaction->tran_type = 'Receivable';
-                $receivable_transaction->account_id = $receivable_account->id;
-                $receivable_transaction->amount = -$customer->balance;
-                $receivable_transaction->description = 'update customer balance';
-                $receivable_transaction->debit = 1;
-                $receivable_transaction->credit = 0;
-                $receivable_transaction->balance = $receivable_account->balance + $customer->balance;
-                $receivable_transaction->date = $request->date;
-                $receivable_transaction->customer_id = $request->customer_id;
-                $receivable_transaction->save();
-
-                $receivable_account->total_out = $receivable_account->total_out - $customer->balance;
-                $receivable_account->balance = $receivable_account->balance + $customer->balance;
-                $receivable_account->save();
-
-            }else{
-
-                $receive_account = Account::find($request->account_id);
-                $receive_transection = new Transection;
-                $receive_transection->tran_type = 'Income';
-                $receive_transection->account_id = $receive_account->id;
-                $receive_transection->amount = $request->amount;
-                $receive_transection->description = $request->description;
-                $receive_transection->debit = 0;
-                $receive_transection->credit = 1;
-                $receive_transection->balance = $receive_account->balance + $request->amount;
-                $receive_transection->date = $request->date;
-                $receive_transection->customer_id = $request->customer_id;
-                $receive_transection->save();
-
-                $receive_account->total_in = $receive_account->total_in + $request->amount;
-                $receive_account->balance = $receive_account->balance + $request->amount;
-                $receive_account->save();
-
-                $receivable_account = Account::find(3);
-                $receivable_transaction = new Transection;
-                $receivable_transaction->tran_type = 'Receivable';
-                $receivable_transaction->account_id = $receivable_account->id;
-                $receivable_transaction->amount = $request->amount;
-                $receivable_transaction->description = 'update customer balance';
-                $receivable_transaction->debit = 1;
-                $receivable_transaction->credit =0;
-                $receivable_transaction->balance = $receivable_account->balance - $request->amount;
-                $receivable_transaction->date = $request->date;
-                $receivable_transaction->customer_id = $request->customer_id;
-                $receivable_transaction->save();
-
-                $receivable_account->total_out = $receivable_account->total_out + $request->amount;
-                $receivable_account->balance = $receivable_account->balance - $request->amount;
-                $receivable_account->save();
-            }
-
-        }
         $customer->balance = $customer->balance + $request->amount;
         $customer->save();
+     
+        $receive_account = Account::find($request->account_id);
+        $receive_account->total_in = $receive_account->total_in + $request->amount;
+        $receive_account->balance = $receive_account->balance + $request->amount;
+        $receive_account->save();
+
+        $receive_transection = new Transection;
+        $receive_transection->tran_type = 'Income';
+        $receive_transection->account_id = $receive_account->id;
+        $receive_transection->amount = $request->amount;
+        $receive_transection->description = $request->description;
+        $receive_transection->debit = 0;
+        $receive_transection->credit = 1;
+        $receive_transection->balance = $receive_account->balance + $request->amount;
+        $receive_transection->date = $request->date;
+        $receive_transection->customer_id = $request->customer_id;
+        $receive_transection->save();
+
 
         Toastr::success(translate('Customer balance updated successfully'));
         return back();
     }
+
 }

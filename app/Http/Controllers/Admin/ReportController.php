@@ -21,47 +21,172 @@ use Illuminate\Support\Facades\Validator;
 use Symfony\Component\Console\Input\Input;
 use App\Models\Account;
 use App\Models\Customer;
+use App\Models\Transection;
+use App\Models\Order;
+use App\Models\SaleInvoice;
 
 class ReportController extends Controller
 {
 
     public function customers(Request $request)
     {
-        $accounts = Account::orderBy('id')->get();
-        $query_param = [];
 
-        $search = $request['search'];
-        if ($request->has('search')) {
-            $key = explode(' ', $request['search']);
-            $customers = Customer::where(function ($q) use ($key) {
-                foreach ($key as $value) {
-                    $q->orWhere('name', 'like', "%{$value}%")
-                        ->orWhere('mobile', 'like', "%{$value}%");
-                }
-            });
-            $query_param = ['search' => $request['search']];
-        } else {
-            $customers = new Customer;
-        }
+        DB::connection()->enableQueryLog();
 
-    
-        $customers = $customers->query();
+        $customers = Customer::query();
+        $customers =  $customers
+        ->addSelect(['income_in' =>  function ($query) use($request){
 
-        $customers =  $customers->select([
-        "customers.*",
-         DB::raw("(SELECT SUM(amount) FROM transections WHERE customer_id = customers.id and tran_type= 'Receivable') as iin"),
-         "customers.*",
-         DB::raw("(SELECT SUM(amount) FROM transections WHERE customer_id = customers.id and tran_type= 'Payable') as outt"),
-          
-        ]);
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            
+            if($request->from != null){
+                $tr = $tr->where('date', '>=', $request->from);
+            }
 
+            if($request->to != null){
+                $tr = $tr->where('date', '<=', $request->to);
+            }
+
+            $tr = $tr->where('credit',1)
+            ->whereIn('tran_type',['income']);
+        }])
+        ->addSelect(['income_out' =>  function ($query) use($request){
+
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            
+            if($request->from != null){
+                $tr = $tr->where('date', '>=', $request->from);
+            }
+
+            if($request->to != null){
+                $tr = $tr->where('date', '<=', $request->to);
+            }
+
+            $tr = $tr->where('debit',1)
+            ->whereIn('tran_type',['income']);
+        }])
+        ->addSelect(['invoices' =>  function ($query) use($request){
+
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('sale_invoices')
+            ->whereColumn('customer_id','customers.id');
+            
+            if($request->from != null){
+                $tr = $tr->where('date', '>=', $request->from);
+            }
+
+            if($request->to != null){
+                $tr = $tr->where('date', '<=', $request->to);
+            }
+
+        }])
+        ->addSelect(['pos' =>  function ($query) use($request){
+
+            $tr = $query->select(DB::raw('sum(total)'))
+            ->from('orders')
+            ->whereColumn('user_id','customers.id');
+            
+            if($request->from != null){
+                $tr = $tr->where('created_at', '>=', $request->from);
+            }
+
+            if($request->to != null){
+                $tr = $tr->where('created_at', '<=', $request->to);
+            }
+
+            $tr = $tr->where('status', 1);
+
+        }]);
+        
         // dd($customers->get()->toArray());
 
-        $customers = $customers->paginate(Helpers::pagination_limit())->appends($query_param);
+        // dd(DB::getQueryLog());
+        if($request->per_page != null ){
+            $customers = $customers->paginate($request->per_page);
+        }else{
+            $customers = $customers->paginate(10);
+        }
         
-        return view('admin-views.reports.customers',compact('customers','accounts','search'));
+        return view('admin-views.reports.customers',compact('customers'));
     }
 
+    public function customers_detail(Request $request,$id)
+    {
+
+            $data = collect();
+            $customer = Customer::find($id);
+
+            $orders = Order::query()->where('user_id',$id)
+            ->when(request('from') != null, function ($query) use($request) {
+               return $query->whereDate('created_at', '>=', $request->from);
+            })->when(request('to') != null, function ($query) use($request) {
+                return $query->whereDate('created_at', '<=', $request->from);
+             })->get();
+            
+            foreach ($orders as $key => $order) {
+                if($order->status == 1){
+                   $des = "Sale Bill #".$order->id; 
+                }else if($order->status == 0) {
+                    $des = "Sale Bill #".$order->id." Pending"; 
+                }else{
+                    $des = "Sale Bill #".$order->id." Canceled"; 
+                }
+                $data->add([
+                    "date" => $order->created_at,
+                    "type" => "POS Order",
+                    "description" => $des,
+                    "debit" => $order->status == 1 ? $order->total : 0,
+                    "credit" => 0,
+                ]);
+            }
+
+            $transactions = Transection::where('customer_id',$id)
+            ->where('tran_type','Income')
+            ->orderBy('date')
+            ->when(request('from') != null, function ($query) use($request) {
+                return $query->whereDate('date', '>=', $request->from);
+             })->when(request('to') != null, function ($query) use($request) {
+                 return $query->whereDate('date', '<=', $request->from);
+              })->get();
+
+            foreach ($transactions as $key => $tr) {
+                $data->add([
+                    "date" => $tr->date,
+                    "type" => "Payment",
+                    "description" => $tr->description,
+                    "debit" => $tr->debit == 1 ? $tr->amount : 0,
+                    "credit" => $tr->credit == 1 ? $tr->amount : 0,
+                ]);
+            }
+
+
+            $saleinvoices = SaleInvoice::where('customer_id',$id)
+            ->orderBy('date')
+            ->when(request('from') != null, function ($query) use($request) {
+                return $query->whereDate('date', '>=', $request->from);
+             })->when(request('to') != null, function ($query) use($request) {
+                 return $query->whereDate('date', '<=', $request->from);
+              })->get();
+
+            foreach ($saleinvoices as $key => $sale) {
+                $data->add([
+                    "date" => $sale->date,
+                    "type" => "SaleInvoice",
+                    "description" => "#".$sale->id." ".$sale->description,
+                    "debit" => $sale->amount,
+                    "credit" => 0,
+                ]);
+            }
+
+            $data = $data->sortBy('date');
+
+
+            return view('admin-views.reports.customer-detail',compact('data','customer'));
+    }
 
     public function index()
     {

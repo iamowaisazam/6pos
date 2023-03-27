@@ -52,58 +52,26 @@
 
 
                         <li class="navbar-vertical-aside-has-menu 
-                            {{Request::is('admin/customer*')?'show':''}}">
+                        {{Request::is('admin/customer*')?'show':''}}">
                             <a class="js-navbar-vertical-aside-menu-link nav-link"
-                                href="{{route('admin.customer.list')}}" 
-                                title="{{\App\CPU\translate('customers')}}">
-                                <i class="tio-home-vs-1-outlined nav-icon"></i>
+                               href="{{route('admin.customer.list')}}" title="{{\App\CPU\translate('customer')}}">
+                                <i class="tio-poi-user nav-icon"></i>
                                 <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">
-                                    {{\App\CPU\translate('customer')}}
+                                    {{\App\CPU\translate('Customer')}}
                                 </span>
                             </a>
                         </li>
 
-                        <!-- Pos Pages -->
                         @php($orders = \App\Models\Order::get()->count())
                         <li class="navbar-vertical-aside-has-menu 
-                           {{Request::is('admin/pos*')?'active':''}}
-                           {{Request::is('admin/saleinvoice*')?'active':''}}
-                          ">
-                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:"
-                            >
+                        {{Request::is('admin/pos*')?'show':''}}">
+                            <a class="js-navbar-vertical-aside-menu-link nav-link"
+                               href="{{route('admin.pos.orders')}}" title="{{\App\CPU\translate('orders')}}">
                                 <i class="tio-shopping nav-icon"></i>
-                                <span
-                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{\App\CPU\translate('POS')}}</span>
+                                <span class="text-truncate">{{\App\CPU\translate('orders')}}
+                                    <span class="badge badge-success ml-2">{{ $orders }} </span>
+                                </span>
                             </a>
-                            <ul class="js-navbar-vertical-aside-submenu nav nav-sub 
-                                {{Request::is('admin/pos*')?'d-block':''}}
-                                {{Request::is('admin/saleinvoice*')?'d-block':''}}
-                            ">
-                                <li class="nav-item {{Request::is('admin/pos/')?'active':''}}">
-                                    <a class="nav-link " href="{{route('admin.pos.index')}}"
-                                       title="{{\App\CPU\translate('POS')}}" target="_blank">
-                                        <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate">{{\App\CPU\translate('pos')}}</span>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item {{Request::is('admin/pos/orders')?'active':''}}">
-                                    <a class="nav-link " href="{{route('admin.pos.orders')}}"
-                                       title="{{\App\CPU\translate('orders')}}">
-                                        <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate">{{\App\CPU\translate('orders')}}
-                                            <span class="badge badge-success ml-2">{{ $orders }} </span>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li class="nav-item {{Request::is('admin/saleinvoices*')?'active':''}}">
-                                    <a class="nav-link " href="{{route('admin.saleinvoices.index')}}"
-                                       title="{{\App\CPU\translate('sale_invoice')}}">
-                                        <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate">{{\App\CPU\translate('sale_invoice')}}</span>
-                                    </a>
-                                </li>
-                            </ul>
                         </li>
                         <!-- Pos Pages -->
 
@@ -111,7 +79,7 @@
                         <!-- Product Pages -->
                         <li class="navbar-vertical-aside-has-menu 
                              {{Request::is('admin/product*')?'active':''}}
-                             {{Request::is('admin/supplier*')?'active':''}}
+                             {{-- {{Request::is('admin/supplier*')?'active':''}} --}}
                              {{Request::is('admin/category*')?'active':''}}
                              {{Request::is('admin/unit*')?'active':''}}
                              {{Request::is('admin/brand*')?'active':''}}
@@ -123,7 +91,7 @@
                             </a>
                             <ul class="js-navbar-vertical-aside-submenu nav nav-sub 
                                 {{Request::is('admin/product*')?'d-block':''}}
-                                {{Request::is('admin/supplier*')?'d-block':''}}
+                                {{-- {{Request::is('admin/supplier*')?'d-block':''}} --}}
                                 {{Request::is('admin/category*')?'d-block':''}}
                                 {{Request::is('admin/unit*')?'d-block':''}}
                                 {{Request::is('admin/brand*')?'d-block':''}}
@@ -262,24 +230,6 @@
                             </ul>
                         </li>
                     
-                        <li class="navbar-vertical-aside-has-menu {{Request::is('admin/reports*')?'active':''}}">
-                            <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" 
-                            href="javascript:">
-                                <i class="tio-premium-outlined nav-icon"></i>
-                                <span
-                                    class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{\App\CPU\translate('reports')}}</span>
-                            </a>
-                            <ul class="js-navbar-vertical-aside-submenu nav nav-sub {{Request::is('admin/reports*')?'d-block':''}}">
-                                <li class="nav-item {{Request::is('admin/reports/customers*')?'active':''}}">
-                                    <a class="nav-link " href="{{route('admin.reports.customers')}}"
-                                       title="{{\App\CPU\translate('customers')}}">
-                                        <span class="tio-circle nav-indicator-icon"></span>
-                                        <span class="text-truncate">{{\App\CPU\translate('customers')}}</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
- 
                         <li class="navbar-vertical-aside-has-menu {{Request::is('admin/business-settings*')?'active':''}}">
                             <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:"
                             >
@@ -298,10 +248,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <!-- Settings End Pages -->
-                        <li class="nav-item pt-8">
-
-                        </li>
+                        
                     </ul>
                 </div>
                 <!-- End Content -->

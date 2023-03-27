@@ -223,9 +223,7 @@
                             </div>
                         @endif
                     </div>
-                    <!-- End Table -->
                 </div>
-                <!-- End Card -->
             </div>
         </div>
     </div>

@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,function(){
 
-   
-
     Route::group(['namespace' => 'Auth', 'prefix' => 'auth', 'as' => 'auth.'], function(){
         Route::get('login', 'LoginController@login')->name('login');
         Route::post('login', 'LoginController@submit');
@@ -25,7 +23,6 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
 
     Route::group(['middleware' => ['admin']], function(){
 
-        
         Route::get('/', 'DashboardController@dashboard')->name('dashboard');
         Route::get('lang/{lang}', 'DashboardController@lang')->name('lang');
         Route::post('account-status','DashboardController@account_stats')->name('account-status');
@@ -56,6 +53,7 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::post('update/{id}', 'BrandController@update')->name('update');
             Route::delete('delete/{id}', 'BrandController@delete')->name('delete');
         });
+
         //unit
         Route::group(['prefix' => 'unit', 'as' => 'unit.'], function () {
             Route::get('index', 'UnitController@index')->name('index');
@@ -126,7 +124,7 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
         });
 
         //account
-        Route::group(['prefix' => 'account', 'as' => 'account.'], function () {
+            Route::group(['prefix' => 'account', 'as' => 'account.'], function () {
             Route::get('add','AccountController@add')->name('add');
             Route::post('store', 'AccountController@store')->name('store');
             Route::get('list', 'AccountController@list')->name('list');
@@ -165,14 +163,20 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::get('add','CustomerController@index')->name('add');
             Route::post('store', 'CustomerController@store')->name('store');
             Route::get('list', 'CustomerController@list')->name('list');
+
+            Route::get('transaction/{id}', 'CustomerController@customers_transaction')->name('transactions');
+            Route::get('status/{id}', 'CustomerController@status')->name('status');
             Route::get('view/{id}', 'CustomerController@view')->name('view');
+            
             Route::get('edit/{id}', 'CustomerController@edit')->name('edit');
             Route::post('update/{id}', 'CustomerController@update')->name('update');
             Route::delete('delete/{id}', 'CustomerController@delete')->name('delete');
+            
             Route::post('update-balance','CustomerController@update_balance')->name('update-balance');
             Route::post('add_recievable','CustomerController@add_recievable')->name('add_recievable');
             Route::get('transaction-list/{id}', 'CustomerController@transaction_list')->name('transaction-list');
         });
+
         //supplier
         Route::group(['prefix' => 'supplier', 'as' => 'supplier.'], function () {
             Route::get('add','SupplierController@index')->name('add');
@@ -187,11 +191,13 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::post('add-new-purchase','SupplierController@add_new_purchase')->name('add-new-purchase');
             Route::post('pay-due','SupplierController@pay_due')->name('pay-due');
         });
+
         //stock limit
         Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
             Route::get('stock-limit', 'StocklimitController@stock_limit')->name('stock-limit');
             Route::post('update-quantity', 'StocklimitController@update_quantity')->name('update-quantity');
         });
+
         //business settings
         Route::group(['prefix' => 'business-settings', 'as' => 'business-settings.'], function () {
             Route::get('shop-setup', 'BusinessSettingsController@shop_index')->name('shop-setup');

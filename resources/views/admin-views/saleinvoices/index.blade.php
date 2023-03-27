@@ -146,9 +146,12 @@
                                                 data-target="#edit_sale_invoice{{$item->id}}"
                                                 >{{\App\CPU\translate('edit')}}</a>
 
-                                                <a href="{{route('admin.saleinvoices.delete',$item->id)}}" class="btn btn-danger" 
-                                                type="button">{{\App\CPU\translate('delete')}}</a>
+                                                <a 
+                                                  href="{{route('admin.saleinvoices.delete',$item->id)}}" 
+                                                  class="btn btn-danger" 
+                                                  type="button">{{\App\CPU\translate('delete')}}</a>
 
+                                                  @include('admin-views.partials.edit_sale_invoice')
                                             </td>
                                         </tr>
                                     @endforeach

@@ -77,6 +77,21 @@ class SaleInvoiceController extends Controller
 
     }
 
+    public function update(Request $request,$id)
+    {
+          
+        SaleInvoice::where('id',$id)->update([
+        "customer_id" => $request->customer_id,
+        "date" => $request->date,
+        "amount" => $request->amount,
+        "description" => $request->description,
+        ]);
+
+        Toastr::success(translate('SaleInvoice Updated successfully'));
+        return redirect()->back();
+
+    }
+
     public function delete($id)
     {
           

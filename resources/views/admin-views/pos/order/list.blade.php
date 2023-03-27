@@ -51,8 +51,7 @@
             <!-- Table -->
             <div class="table-responsive ">
                 <table
-                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
-                >
+                    class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table">
                     <thead class="thead-light">
                     <tr>
                         <th class="">
@@ -63,11 +62,9 @@
                         <th>{{\App\CPU\translate('status')}}</th>
                         <th>{{\App\CPU\translate('customer')}}</th>
                         <th>{{\App\CPU\translate('payment_status')}}</th>
-                        {{-- <th>{{\App\CPU\translate('payment_method')}}</th> --}}
                         <th>{{\App\CPU\translate('subtotal')}}</th>
                         <th>{{\App\CPU\translate('tax')}}</th>
-                        <th>{{\App\CPU\translate('extra_discount')}}</th>
-                        <th>{{\App\CPU\translate('coupon_discount')}}</th>
+                        <th>{{\App\CPU\translate('discount')}}</th>
                         <th>{{\App\CPU\translate('grand_total')}}</th>
                         <th>{{\App\CPU\translate('actions')}}</th>
                     </tr>
@@ -101,16 +98,13 @@
                                     {{\App\CPU\translate('unpaid')}}
                                 @endif
                             </td>
-                            {{-- <td>
-                                {{ $order->account?$order->account->account:\App\CPU\translate('cash') }}
-                            </td> --}}
                             <td>
                                 {{ $order->order_amount . ' ' . \App\CPU\Helpers::currency_symbol()}}
                             </td>
                             <td>{{$order['total_tax'] . ' ' . \App\CPU\Helpers::currency_symbol()}}</td>
                             <td>{{ $order->extra_discount?$order->extra_discount .' '.\App\CPU\Helpers::currency_symbol():0 .' '.\App\CPU\Helpers::currency_symbol() }}</td>
-                            <td>{{ $order->coupon_discount_amount?$order->coupon_discount_amount .' '.\App\CPU\Helpers::currency_symbol():0 .' '.\App\CPU\Helpers::currency_symbol() }}</td>
-                            <td>{{ $order->order_amount + $order->total_tax - $order->extra_discount - $order->coupon_discount_amount .' '.\App\CPU\Helpers::currency_symbol()}}</td>
+                           
+                            <td>{{ $order->total .' '.\App\CPU\Helpers::currency_symbol()}}</td>
                            
                             <td>
                                 <div class="dropdown">
@@ -127,7 +121,7 @@
                                             <a class="dropdown-item"
                                               type="button" 
                                               data-toggle="modal" 
-                                              data-target="#add_recievable{{$order->id}}" 
+                                              data-target="#customer_order_payment_form{{$order->id}}" 
                                             >{{\App\CPU\translate('make_payment')}}</a>
                                         @endif
                                       @endif
@@ -149,27 +143,21 @@
 
                                   @include('admin-views.partials.make_customer_payment')
                                   @include('admin-views.partials.order_cancel_form')
-
                             </td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
             </div>
-            <!-- End Table -->
-
-            <!-- Footer -->
+        
             <div class="card-footer">
-                <!-- Pagination -->
                 <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
                     <div class="col-sm-auto">
                         <div class="d-flex justify-content-center justify-content-sm-end">
-                            <!-- Pagination -->
                             {!! $orders->links() !!}
                         </div>
                     </div>
                 </div>
-                <!-- End Pagination -->
             </div>
             @if(count($orders)==0)
                 <div class="text-center p-4">
@@ -177,10 +165,8 @@
                          alt="Image Description">
                     <p class="mb-0">{{ \App\CPU\translate('No_data_to_show')}}</p>
                 </div>
-        @endif
-        <!-- End Footer -->
+            @endif
         </div>
-        <!-- End Card -->
     </div>
 
     <div class="modal fade" id="print-invoice" tabindex="-1">

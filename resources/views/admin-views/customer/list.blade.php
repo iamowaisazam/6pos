@@ -23,33 +23,60 @@
         <!-- End Page Header -->
         <div class="row gx-2 gx-lg-3">
             <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <form action="{{url()->current()}}" method="GET">
+                            <div class="row m-1">
+                                <div class="form-group col-12 col-sm-3">
+                                    <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('search')}} </label>
+                                    <input type="text" placeholder="Search" name="search" class="form-control" value="{{request()->search}}" />
+                                </div>
+                                <div class="form-group col-12 col-sm-6 col-md-3 col-lg-3">
+                                    <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Status')}} </label>
+                                    <select id="status" name="status" class="form-control js-select2-custom">
+                                        <option {{request()->status == null || request()->status == 1 ? 'selected' : ''}} value="1">{{\App\CPU\translate('active')}}</option>
+                                        <option {{request()->status == '0' ? 'selected' : ''}} value="0">{{\App\CPU\translate('deactive')}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-12 col-sm-6 col-md-3 col-lg-3">
+                                    <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Show')}} </label>
+                                    <select id="tran_type" name="per_page" class="form-control js-select2-custom">
+                                        <option {{request()->per_page == 10 ? 'selected' : ''}} value="10">{{\App\CPU\translate('10')}}</option>
+                                        <option {{request()->per_page == 20 ? 'selected' : ''}} value="20">{{\App\CPU\translate('20')}}</option>
+                                        <option {{request()->per_page == 50 ? 'selected' : ''}} value="50">{{\App\CPU\translate('50')}}</option>
+                                        <option {{request()->per_page == 100 ? 'selected' : ''}} value="100">{{\App\CPU\translate('100')}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 text-center align-self-center">
+                                    <button class="btn btn-primary">{{\App\CPU\translate('search')}}</button>
+                                </div>
+                           </div>
+                        </form>
+                    </div>
+                </div>
                 <!-- Card -->
                 <div class="card">
                     <!-- Header -->
                     <div class="card-header">
                         <div class="row justify-content-between align-items-center flex-grow-1">
-                            <div class="col-12 col-sm-7 col-md-6 col-lg-4 col-xl-6 mb-3 mb-sm-0">
-                                <form action="{{url()->current()}}" method="GET">
-                                  
-                                    <!-- Search -->
-                                    <div class="input-group input-group-merge input-group-flush">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text">
-                                                <i class="tio-search"></i>
-                                            </div>
-                                        </div>
-                                        <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                               placeholder="{{\App\CPU\translate('search_by_name_or_phone')}}" aria-label="Search" value="{{ $search }}"  required>
-                                        <button type="submit" class="btn btn-primary">{{\App\CPU\translate('search')}} </button>
-
-                                    </div>
-                                    <!-- End Search -->
-                                </form>
+                            <div class="col-12 col-sm-3">
+                                Showing {{($customers->currentpage()-1)*$customers->perpage()+1}} to {{ $customers->currentpage()*(($customers->perpage() < $customers->total()) ? $customers->perpage(): $customers->total())}} of {{ $customers->total()}} entries
                             </div>
-                            <div class="col-12 col-sm-5">
-                                <a href="{{route('admin.customer.add')}}" class="btn btn-primary float-right"><i
-                                        class="tio-add-circle"></i> {{\App\CPU\translate('add_new_customer')}}
-                                </a>
+                            <div class="col-12 col-sm-9 text-right">
+                                <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" 
+                                      type="button"
+                                      data-toggle="dropdown" 
+                                      aria-expanded="false">{{\App\CPU\translate('action')}}
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" >Export</a>
+                                        <a href="{{route('admin.customer.add')}}" class="dropdown-item btn btn-primary float-right"><i
+                                            class="tio-add-circle"></i> {{\App\CPU\translate('add_new_customer')}}
+                                         </a>
+                                    </div>
+                                  </div>
                             </div>
                         </div>
                     </div>
@@ -63,42 +90,69 @@
                                 <th>{{\App\CPU\translate('#')}}</th>
                                 <th>{{ \App\CPU\translate('image') }}</th>
                                 <th>{{\App\CPU\translate('name')}}</th>
-                                <th>{{\App\CPU\translate('phone')}}</th>
                                 <th>{{ \App\CPU\translate('orders') }}</th>
+                                <th>{{ \App\CPU\translate('status') }}</th>
+                                <th>{{ \App\CPU\translate('receivable') }}</th>
+                                <th>{{ \App\CPU\translate('payable') }}</th>
                                 <th class="text-center" >{{ \App\CPU\translate('balance') }}</th>
+                                <th>{{ \App\CPU\translate('income') }}</th>
                                 <th>{{\App\CPU\translate('action')}}</th>
                             </tr>
                             </thead>
                             <tbody id="set-rows">
                             
                             @foreach($customers as $key=>$customer)
+
+                            <?php 
+
+                                $total = 0;
+                                $income = 0;
+                                $receivable = 0;
+                                $payable = 0;
+
+                                $receivable += $customer->rc;
+                                $receivable -= $customer->rd;
+
+                                $payable += $customer->pc;
+                                $payable -= $customer->pd;
+
+                                $income += $customer->income_credit;
+                                $income -= $customer->income_debit;
+
+                           ?>
+                      
                                 <tr>
                                     <td>{{ $customers->firstItem()+$key+1 }}</td>
                                     <td>
-                                        <a href="{{route('admin.customer.view',[$customer['id']])}}">
+                                        <a>
                                             <img class="img-one-cl"
                                             onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
                                             src="{{asset('storage/app/public/customer')}}/{{ $customer->image }}" alt="">
                                         </a>
                                     </td>
                                     <td>
-                                        <a class="text-primary" href="{{route('admin.customer.view',[$customer['id']])}}">
+                                        <a class="text-primary">
                                             {{ $customer->name }}
                                         </a>
                                     </td>
-                                    <td>
-                                        @if ($customer->id!=0)
-                                            {{ $customer->mobile }}
-                                        @else
-                                            {{\App\CPU\translate('no_phone')}}
-                                        @endif
-                                    </td>
+                                    
                                     <td>{{ $customer->orders->count() }}</td>
-                                    <td class="text-center p-5" >
-                                        {{ $customer->balance. ' ' . \App\CPU\Helpers::currency_symbol() }}
+                                    <td>
+                                        {{$customer->status == 1 ? 'Active' : 'Deactive'}}
                                     </td>
                                     <td>
-
+                                        {{$receivable  . ' ' . \App\CPU\Helpers::currency_symbol()}}
+                                    </td>
+                                    <td>
+                                        {{$payable  . ' ' . \App\CPU\Helpers::currency_symbol()}}
+                                    </td>
+                                    <td class="text-center p-5" >
+                                        {{$customer->balance . ' ' . \App\CPU\Helpers::currency_symbol() }}
+                                    </td>
+                                    <td>
+                                        {{$income  . ' ' . \App\CPU\Helpers::currency_symbol()}}
+                                    </td>
+                                    <td>
                                         <div class="dropdown">
                                             <button class="btn btn-info dropdown-toggle" 
                                               type="button"
@@ -112,23 +166,23 @@
                                                  type="button" 
                                                  data-toggle="modal" 
                                                  data-target="#update-customer-balance{{$customer['id']}}">
-                                                
                                                 {{\App\CPU\translate('add_balance')}}</a>
 
-                                                <a class="dropdown-item" 
-                                                  type="button" 
-                                                  data-toggle="modal" 
-                                                  data-target="#add_recievable{{$customer['id']}}"
-                                                  >
-                                                  {{\App\CPU\translate('add_recievable')}}</a>
+                                                <a class="dropdown-item"  
+                                                id="{{ $customer->id }}" 
+                                                 type="button" 
+                                                 data-toggle="modal" 
+                                                 data-target="#add_receivable{{$customer['id']}}">
+                                                 {{\App\CPU\translate('add_receivable')}}</a>
 
-                                                <a class="dropdown-item" href="{{route('admin.customer.view',[$customer['id']])}}">View</a>
-                                                
+                                                 <a class="dropdown-item"
+                                                 href="{{route('admin.customer.transactions',[$customer['id']])}}">
+                                                 View Transaction</a>
+
                                                 @if($customer['id'] != 0)
                                                 <a class="dropdown-item"
                                                     href="{{route('admin.customer.edit',[$customer['id']])}}">
-                                                    Edit
-                                                </a>
+                                                    Edit</a>
                                                 @endif
 
                                                 @if($customer['id'] != 0)
@@ -139,101 +193,21 @@
                                                         @csrf @method('delete')
                                                     </form>
                                                 @endif
+
+                                                @if($customer['id'] != 0)
+                                                    @if($customer['status'] == 0)
+                                                    <a class="dropdown-item" href="{{route('admin.customer.status',[$customer['id']])}}?status=1">Active</a>
+                                                    @else
+                                                    <a class="dropdown-item" 
+                                                    href="{{route('admin.customer.status',[$customer['id']])}}?status=0">Deactive</a>
+                                                    @endif
+                                                @endif
                                             </div>
                                           </div>
 
-                                          <div class="modal fade" id="update-customer-balance{{$customer['id']}}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">{{\App\CPU\translate('update_customer_balance_cl')}}</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <form action="{{route('admin.customer.update-balance')}}" method="post" class="row">
-                                                            @csrf
-                                                            <input type="hidden" id="customer_id" name="customer_id"  value="{{$customer['id']}}" />
-                                    
-                                                                <div class="form-group col-12 col-sm-6">
-                                                                    <label for="">{{\App\CPU\translate('balance')}}</label>
-                                                                    <input type="number" step="0.01" min="0" class="form-control" name="amount" required>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6">
-                                                                    <div class="form-group">
-                                                                        <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('balance_receive_account')}}</label>
-                                                                        <select name="account_id" class="form-control js-select2-custom" required>
-                                                                            <option value="">---{{\App\CPU\translate('select')}}---</option>
-                                                                            @foreach ($accounts as $account)
-                                                                                @if ($account['id']!=2 && $account['id']!=3)
-                                                                                    <option value="{{$account['id']}}">{{$account['account']}}</option>
-                                                                                @endif
-                                                                            @endforeach
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6">
-                                                                    <div class="form-group">
-                                                                        <label class="input-label">{{\App\CPU\translate('description')}} </label>
-                                                                        <input type="text" name="description" class="form-control" placeholder="{{\App\CPU\translate('description')}}" >
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6">
-                                                                    <div class="form-group">
-                                                                        <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('date')}} </label>
-                                                                        <input type="date" name="date" class="form-control" required>
-                                                                    </div>
-                                                                </div>
-                                                            <div class="form-group col-sm-12">
-                                                                <button class="btn btn-sm btn-primary" type="submit">{{\App\CPU\translate('submit')}}</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                          @include('admin-views.partials.add_customer_balance')
+                                          @include('admin-views.partials.add_customer_recievable')
 
-
-                                          <div class="modal fade" id="add_recievable{{$customer['id']}}" tabindex="-1">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">{{\App\CPU\translate('add_recievable')}}</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <form action="{{route('admin.customer.add_recievable')}}" method="post" class="row">
-                                                            @csrf
-                                                            <input type="hidden" id="customer_id" name="customer_id"  value="{{$customer['id']}}" >
-                                    
-                                                                <div class="form-group col-12 col-sm-6">
-                                                                    <label for="">{{\App\CPU\translate('amount')}}</label>
-                                                                    <input type="number" step="0.01" min="0" class="form-control" name="amount" required>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6">
-                                                                    <div class="form-group">
-                                                                        <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('date')}} </label>
-                                                                        <input type="date" name="date" class="form-control" required>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-12">
-                                                                    <div class="form-group">
-                                                                        <label class="input-label">{{\App\CPU\translate('description')}} </label>
-                                                                        <input type="text" name="description" class="form-control" placeholder="{{\App\CPU\translate('description')}}" >
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            <div class="form-group col-sm-12">
-                                                                <button class="btn btn-sm btn-primary" type="submit">{{\App\CPU\translate('submit')}}</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -260,12 +234,6 @@
             </div>
         </div>
     </div>
-
-
-    
-
-
-    
 
 @endsection
 

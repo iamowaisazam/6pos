@@ -435,14 +435,13 @@ class POSController extends Controller
             Toastr::error(translate('cart_empty_warning'));
             return back();
         }
+
         $cart = session($cart_id);
-        $coupon_code = 0;
         $product_price = 0;
         $order_details = [];
         $product_discount = 0;
         $product_tax = 0;
         $ext_discount = 0;
-        $coupon_discount = $cart['coupon_discount'] ?? 0;
 
         $order_id = 100000 + Order::all()->count() + 1;
         if (Order::find($order_id)) {
@@ -451,13 +450,9 @@ class POSController extends Controller
 
         $order = new Order();
         $order->id = $order_id;
-
         $order->user_id = $user_id;
-        $order->coupon_code = $cart['coupon_code'] ?? null;
-        $order->coupon_discount_title = $cart['coupon_title'] ?? null;
         $order->payment_id = null;
         $order->transaction_reference = $request->transaction_reference ?? null;
-
         $order->created_at = now();
         $order->updated_at = now();
 
@@ -498,16 +493,14 @@ class POSController extends Controller
         $total_tax_amount = $product_tax;
         $order->total_tax = $total_tax_amount;
         $order->order_amount = $total_price;
-        $order->coupon_discount_amount = $coupon_discount;
-        $order->collected_cash = $request->collected_cash ? $request->collected_cash : $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
-        $order->total = $total_price + $total_tax_amount - $ext_discount - $coupon_discount;
+        $order->collected_cash = null;
+        $order->total = $total_price + $total_tax_amount - $ext_discount;
         $order->save();
 
         foreach ($order_details as $key => $item) {
             $order_details[$key]['order_id'] = $order->id;
         }
 
- 
         OrderDetail::insert($order_details);
         session()->forget($cart_id);
         session(['last_order' => $order->id]);
@@ -523,46 +516,145 @@ class POSController extends Controller
 
         $order = Order::find($id);
         $account = Account::find($request->account_id);
+        $customer =  Customer::find($order->user_id);
+        
+        if($request->payment_type == 'cash'){
+
+            $transection = new Transection;
+            $transection->tran_type = 'Income';
+            $transection->account_id = $account->id;
+            $transection->amount = $order->total;
+            $transection->description = $request->description;
+            $transection->debit = 0;
+            $transection->credit = 1;
+            $transection->balance = $account->balance + $order->total;
+            $transection->date = $request->date;
+            $transection->customer_id = $order->user_id;
+            $transection->order_id = $order->id;
+            $transection->save();
+
+            $account->balance = $account->balance +  $order->total;
+            $account->total_in = $account->total_in + $order->total;
+            $account->save();
+            
+            
+            $order->payment_id =1;
+            $order->collected_cash = $request->amount;
+            $order->returned_cash = $request->returned_amount;
+            $order->save();
+
+            Toastr::success(translate('Payment Complete successfully'));
+            return back();
+        }
+
+
+        if($customer->balance <= 0){
+
+            $receivable_account = Account::find(3);
+            $receivable_transaction = new Transection;
+            $receivable_transaction->tran_type = 'Receivable';
+            $receivable_transaction->account_id = $receivable_account->id;
+            $receivable_transaction->amount =  $order->total;
+            $receivable_transaction->description = $request->description;
+            $receivable_transaction->debit = 0;
+            $receivable_transaction->credit = 1;
+            $receivable_transaction->balance = $receivable_account->balance +  $order->total;
+            $receivable_transaction->date = $request->date;
+            $receivable_transaction->customer_id = $customer->id;
+            $receivable_transaction->order_id = $order->id;
+            $receivable_transaction->save();
+
+            $receivable_account->total_in = $receivable_account->total_in +  $order->total;
+            $receivable_account->balance = $receivable_account->balance +  $order->total;
+            $receivable_account->save();
+            $customer->balance = $customer->balance -  $order->total;
+            $customer->save();
+
+            Toastr::success(translate('Payment successfully'));
+            return back();
+        }
+
+
+
+        if($customer->balance > 0){
+
+            $remaining_balance = $customer->balance -  $order->total;
+
+            if($remaining_balance < 0) {
+
+               $payable_account = Account::find(2);
+               $payable_transaction = new Transection;
+               $payable_transaction->tran_type = 'Payable';
+               $payable_transaction->account_id = $payable_account->id;
+               $payable_transaction->amount = $customer->balance;
+               $payable_transaction->description = $request->description;
+               $payable_transaction->debit = 1;
+               $payable_transaction->credit = 0;
+               $payable_transaction->balance = $payable_account->balance - $customer->balance;
+               $payable_transaction->date = $request->date;
+               $payable_transaction->customer_id = $customer->id;
+               $payable_transaction->order_id = null;
+               $payable_transaction->save();
+               $payable_account->total_out = $payable_account->total_out + $customer->balance;
+               $payable_account->balance = $payable_account->balance - $customer->balance;
+               $payable_account->save();
+
+               $receivable_account = Account::find(3);
+               $receivable_transaction = new Transection;
+               $receivable_transaction->tran_type = 'Receivable';
+               $receivable_transaction->account_id = $receivable_account->id;
+               $receivable_transaction->amount = -$remaining_balance;
+               $receivable_transaction->description = $request->description;
+               $receivable_transaction->debit = 0;
+               $receivable_transaction->credit = 1;
+               $receivable_transaction->balance = $receivable_account->balance - $remaining_balance;
+               $receivable_transaction->date = $request->date;
+               $receivable_transaction->customer_id = $customer->id;
+               $receivable_transaction->order_id =  $order->id;
+               $receivable_transaction->save();
+               $receivable_account->total_in = $receivable_account->total_in - $remaining_balance;
+               $receivable_account->balance = $receivable_account->balance - $remaining_balance;
+               $receivable_account->save();
+
+            }else{
+
+               $payable_account = Account::find(2);
+               $payable_transaction = new Transection;
+               $payable_transaction->tran_type = 'Payable';
+               $payable_transaction->account_id = $payable_account->id;
+               $payable_transaction->amount =  $order->total;
+               $payable_transaction->description = $request->description;
+               $payable_transaction->debit = 1;
+               $payable_transaction->credit = 0;
+               $payable_transaction->balance = $payable_account->balance -  $order->total;
+               $payable_transaction->date = $request->date;
+               $payable_transaction->customer_id = $customer->id;
+               $payable_transaction->order_id =  $order->id;
+               $payable_transaction->save();
+               $payable_account->total_out = $payable_account->total_out +  $order->total;
+               $payable_account->balance = $payable_account->balance -  $order->total;
+               $payable_account->save();
+            }
+
+            $customer->balance = $remaining_balance;
+            $customer->save();
+        }
+
         $order->payment_id =1;
-
-        $transection = new Transection;
-        $transection->tran_type = 'Income';
-        $transection->account_id = $account->id;
-        $transection->amount = $order->total;
-        $transection->description = 'Payment Recieved Order #'.$order->id." ".$request->description;
-        $transection->debit = 0;
-        $transection->credit = 1;
-        $transection->balance = $account->balance + $order->total;
-        $transection->date = $request->date;
-        $transection->customer_id = $order->user_id;
-        $transection->order_id = $order->id;
-        $transection->save();
-
-        $account->balance = $account->balance +  $order->total;
-        $account->total_in = $account->total_in + $order->total;
-        $account->save();
+        $order->collected_cash = 0;
+        $order->returned_cash = 0;
         $order->save();
 
-        $customer = Customer::find($order->user_id);
-        $customer->balance = $customer->balance - $order->total;
-        $customer->save();
-
-        Toastr::success(translate('Payment Generated successfully'));
+        Toastr::success(translate('Payment successfully'));
         return back();
+        
     }
 
     public function order_complete($id)
     {
-     
         $order = Order::find($id);
         $order->status = 1;
         $order->save();
-
-
-        $customer = Customer::find($order->user_id);
-        $customer->balance = $customer->balance - $order->total;
-        $customer->save();
-
         Toastr::success(translate('Order Complete successfully'));
         return back();
     }

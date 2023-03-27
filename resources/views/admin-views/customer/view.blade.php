@@ -8,6 +8,7 @@
 
 @section('content')
 <div class="content container-fluid">
+
         <!-- Page Header -->
         <div class="d-print-none pb-2">
             <div class="row align-items-center">
@@ -28,6 +29,9 @@
                     <div class="page-header">
                         <div class="js-nav-scroller hs-nav-scroller-horizontal">
                             <ul class="nav nav-tabs page-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('admin.customer.view',[$customer['id']]) }}">{{\App\CPU\translate('profile')}}</a>
+                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link active" href="{{ route('admin.customer.view',[$customer['id']]) }}">{{\App\CPU\translate('order_list')}}</a>
                                 </li>
@@ -50,6 +54,7 @@
                 </div>
             </div>
         </div>
+
         <!-- End Page Header -->
         <div class="row" id="">
             <div class="col-lg-8 mb-3 mb-lg-0">
@@ -125,17 +130,14 @@
             </div>
 
             <div class="col-lg-4">
-                <!-- Card -->
                 <div class="card">
-                    <!-- Header -->
                     <div class="card-header">
                         <h4 class="card-header-title">{{\App\CPU\translate('customer')}}</h4>
                     </div>
-                    <!-- End Header -->
 
-                    <!-- Body -->
                     @if($customer)
                         <div class="card-body">
+
                             <div class="media align-items-center" href="javascript:">
                                 <div class="avatar avatar-circle mr-3">
                                     <img
@@ -145,15 +147,10 @@
                                         alt="Image Description">
                                 </div>
                                 <div class="media-body">
-                                <span
-                                    class="text-body text-hover-primary">{{$customer['name']}}</span>
-
+                                <span class="text-body text-hover-primary">{{$customer['name']}}</span>
                                 </div>
-
                             </div>
-
                             <hr>
-
                             <div class="media align-items-center" href="javascript:">
                                 <div class="icon icon-soft-info icon-circle mr-3">
                                     <i class="tio-shopping-basket-outlined"></i>
@@ -161,10 +158,9 @@
                                 <div class="media-body">
                                     <span
                                         class="text-body text-hover-primary">{{ $orders->total() }} {{\App\CPU\translate('orders')}}</span>
-
                                 </div>
-
                             </div>
+
                             <div class="media align-items-center mt-1" href="javascript:">
                                 <div class="icon icon-soft-info icon-circle mr-3">
                                     <i class="tio-money"></i>
@@ -172,20 +168,16 @@
                                 <div class="media-body">
                                     <span
                                         class="text-body text-hover-primary">{{$customer->balance. ' ' . \App\CPU\Helpers::currency_symbol() }}</span>
-
                                 </div>
-
                             </div>
 
                             <hr>
 
-                            @if ($customer->id!=0)
+                            @if($customer->id!=0)
                                 <div class="d-flex justify-content-between align-items-center">
-                                <h5>{{\App\CPU\translate('contact_info')}}</h5>
+                                   <h5>{{\App\CPU\translate('contact_info')}}</h5>
                                 </div>
-
                                 <ul class="list-unstyled list-unstyled-py-2">
-
                                     <li>
                                         <i class="tio-android-phone-vs mr-2"></i>
                                         {{$customer['mobile']}}
@@ -208,41 +200,11 @@
                                     <li>{{\App\CPU\translate('address')}}: {{$customer['address']}}</li>
                                 </ul>
                             @endif
-
                         </div>
-                @endif
-                <!-- End Body -->
-                </div>
-                <!-- End Card -->
-            </div>
-        </div>
-
-        <!-- End Row -->
-    </div>
-<div class="modal fade" id="print-invoice" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{\App\CPU\translate('print')}} {{\App\CPU\translate('invoice')}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body row font-one-cv">
-                    <div class="col-md-12">
-                        <center>
-                            <input type="button" class="btn btn-primary non-printable" onclick="printDiv('printableArea')"
-                                value="{{\App\CPU\translate('Proceed, If thermal printer is ready')}}."/>
-                            <a href="{{url()->previous()}}" class="btn btn-danger non-printable">{{\App\CPU\translate('Back')}}</a>
-                        </center>
-                        <hr class="non-printable">
-                    </div>
-                    <div class="row m-auto" id="printableArea">
-
-                    </div>
-
+                    @endif
                 </div>
             </div>
+
         </div>
     </div>
 @endsection

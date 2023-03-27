@@ -6,7 +6,7 @@ use App\Models\BusinessSetting;
 use App\Models\Currency;
 use App\Models\Transection;
 use App\Models\Customer;
-
+use DB;
 class Helpers
 {
 
@@ -33,8 +33,41 @@ class Helpers
         }
 
         
-        dd($customer);
+    }
 
+
+   static public function customers_with_balance()
+    {
+
+        $customers = Customer::query();
+        
+        $customers->addSelect(['income_in' =>  function ($query){
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id')
+            ->where('credit',1)
+            ->whereIn('tran_type',['income']);
+        }])
+        ->addSelect(['income_out' =>  function ($query){
+            $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id')
+            ->where('debit',1)
+            ->whereIn('tran_type',['income']);
+        }])
+        ->addSelect(['invoices' =>  function ($query){
+            $query->select(DB::raw('sum(amount)'))
+            ->from('sale_invoices')
+            ->whereColumn('customer_id','customers.id');
+        }])
+        ->addSelect(['pos' =>  function ($query){
+            $query->select(DB::raw('sum(total)'))
+            ->from('orders')
+            ->whereColumn('user_id','customers.id')
+            ->where('status', 1);
+        }]);
+        
+        return $customers;
     }
 
 

@@ -38,6 +38,7 @@ class ReceivableController extends Controller
         $receivables = $query->latest()->paginate(Helpers::pagination_limit());
         return view('admin-views.account-receivable.add',compact('accounts','receivables','search','from','to'));
     }
+    
     public function store(Request $request)
     {
         $request->validate([

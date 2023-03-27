@@ -113,5 +113,77 @@
     <source src="{{asset('public/assets/admin/sound/notification.mp3')}}" type="audio/mpeg">
 </audio>
 
+
+ <script> 
+    $(document).ready(function () {
+
+
+        $('.add_balance_form .add_balance').keyup(function(){
+
+            let form = $(this).parent().parent();
+            let current_balance = parseFloat( form.find('.current_balance').val());
+            let value = parseFloat($(this).val());
+            form.find('.remaining_balance').val(current_balance + value);
+
+        });
+
+        $('.remove_balance_form .add_balance').keyup(function(){
+            let form = $(this).parent().parent();
+            let current_balance = parseFloat( form.find('.current_balance').val());
+            let value = parseFloat($(this).val());
+            form.find('.remaining_balance').val(current_balance - value);
+        });
+
+
+        $('.customer_order_payment_form .payment_type').change(function(){
+            
+            let element = $(this).parent().parent().parent();
+            let payment_type = $(this).val();
+            let order_amount = element.find('.order_total input').val();
+            element.find('.amount').val('');
+
+            if(payment_type == 'cash'){
+                element.find('.current_balance').hide();
+                element.find('.remaining_balance').hide();
+                element.find('.returned_amount').show();
+                element.find('.collected_cash').show();
+                element.find('.collected_cash input').attr('required',true);
+                element.find('.collected_cash input').attr({"min" : order_amount});
+
+            }else{
+
+                element.find('.current_balance').show();
+                element.find('.remaining_balance').show();
+                element.find('.returned_amount').hide();
+                element.find('.collected_cash').hide();
+                element.find('.collected_cash input').removeAttr('required');
+                let current_balance = element.find('.current_balance input').val();
+                element.find('.remaining_balance input').val( current_balance - order_amount);
+            }
+
+        });
+
+
+        $('.customer_order_payment_form .amount').change(function(){
+           
+            let element = $(this).parent().parent();
+            let amount = $(this).val(); 
+            let order_amount = element.find('.order_total input').val();
+            let payment_type = element.find('.payment_type').val();
+
+            if(payment_type == 'cash'){
+               let remain = amount - order_amount;
+               element.find('.returned_amount input').val(remain);
+            }else{
+                element.find('.returned_amount input').val('');
+            }
+
+        });
+
+
+    });
+
+</script>
+
 </body>
 </html>

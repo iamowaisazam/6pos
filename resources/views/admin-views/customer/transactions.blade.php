@@ -8,13 +8,16 @@
 @endpush
 
 @section('content')
+<?php 
+    $types = request()->type == null ? [] : request()->type;
+?>
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
             <div class="row align-items-center">
                 <div class="col-sm mb-2 mb-sm-0">
                     <h1 class="page-header-title text-capitalize"><i
-                      class="tio-filter-list"></i> {{\App\CPU\translate('customers_report')}} ({{$customer->name}})
+                      class="tio-filter-list"></i> {{\App\CPU\translate('customer')}} ({{$customer->name}})
                     </h1>
                 </div>
             </div>
@@ -27,23 +30,31 @@
                     <div class="card-body">
                         <form action="{{url()->current()}}" method="GET">
                             <div class="row m-1">
-                                {{-- <div class="form-group col-12 col-sm-6 col-md-3 col-lg-3">
-                                    <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Search')}} </label>
-                                    <input class="form-control" type="text" name="search" value="{{request()->search}}"
-                                    placeholder="{{\App\CPU\translate('search_by_name_or_phone')}}"
-                                    />
-                                </div> --}}
-                                <div class="form-group col-md-6">
-                                    <label class="input-label" 
-                                    for="exampleFormControlInput1">{{\App\CPU\translate('start_date')}} </label>
-                                    <input id="start_date" type="date" 
-                                    name="from" class="form-control" value="{{request()->from}}">
+                                <div class="form-group col-12 col-md-4">
+                                    <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('type')}} </label>
+                                    <select id="tran_type" multiple name="type[]" class="form-control js-select2-custom">
+                                        <option 
+                                         @if(in_array('Receivable',$types)) selected @endif
+                                        value="Receivable">{{\App\CPU\translate('Receivable')}}</option>
+                                        <option 
+                                        @if(in_array('Payable',$types)) selected @endif
+                                        value="Payable" value="Payable">{{\App\CPU\translate('Payable')}}</option>
+                                        <option 
+                                        @if(in_array('Income',$types)) selected @endif
+                                        value="Income">{{\App\CPU\translate('Income')}}</option>
+                                    </select>
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-4">
+                                    <label class="input-label" 
+                                    for="exampleFormControlInput1">{{\App\CPU\translate('start_date')}}</label>
+                                    <input type="datetime-local" name="from" class="form-control" value="{{request()->from}}">
+                                </div>
+                                <div class="form-group col-md-4">
                                     <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('end_date')}} </label>
-                                    <input id="end_date" type="date" name="to" class="form-control" 
+                                    <input type="datetime-local" name="to" class="form-control" 
                                     value="{{request()->to}}">
                                 </div>
+
                                 {{-- <div class="form-group col-12 col-sm-6 col-md-3 col-lg-3">
                                     <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Show')}} </label>
                                     <select id="tran_type" name="per_page" class="form-control js-select2-custom">
@@ -70,7 +81,7 @@
                             </div>
                             <div class="col-12 col-sm-5 text-right">
                                 <div class="dropdown">
-                                    <button class="btn btn-info dropdown-toggle" 
+                                    <button class="btn btn-primary dropdown-toggle" 
                                       type="button"
                                       data-toggle="dropdown" 
                                       aria-expanded="false">{{\App\CPU\translate('action')}}
@@ -101,38 +112,62 @@
                             <tbody id="set-rows">
                                     <?php 
                                         $sr = 0;
-                                        $credit = 0;
-                                        $debit = 0;
                                         $balance = 0;
                                     ?>
                                     @foreach($data as $key=> $item)
-                                        <?php 
-                                          $sr += 1;
-                                          $balance += $item['credit']; 
-                                          $balance -= $item['debit']; 
+                                    
+                                    <?php 
+                                            $credit = 0;
+                                            $debit = 0;
+                                            $sr += 1;
+
+                                            if($item->debit){
+                                                    $balance -= $item->amount; 
+                                                    $debit -= $item->amount; 
+                                            }else{
+                                                    $balance += $item->amount; 
+                                                    $credit += $item->amount; 
+                                            }
+
+                                            // if($item->tran_type == 'Receivable'){
+                                             
+                                            //     // if($item->debit){
+                                            //     //     $balance -= $item->amount; 
+                                            //     //     $debit -= $item->amount; 
+                                            //     // }else{
+                                            //     //     $balance += $item->amount; 
+                                            //     //     $credit += $item->amount; 
+                                            //     // }
+
+                                            //     // $balance -= $item->amount; 
+                                            //     // $debit += $item->amount; 
+
+                                            // }else if($item->tran_type == 'Income'){
+                                            //     // $balance += $item->amount; 
+                                            //     // $credit += $item->amount; 
+                                            // }
                                         ?>
                                         <tr>
                                             <td>{{$sr}}</td>
-                                            <td>{{$item['date']}}</td>
-                                            <td>{{$item['type']}}</td>
-                                            <td>{{$item['description']}}</td>            
+                                            <td>{{$item->date}}</td>
+                                            <td>{{$item->tran_type}}</td>
+                                            <td>{{$item->description}}</td>            
                                             <td>
-                                                @if($item['credit'])
-                                                 {{$item['credit']}} 
+                                                @if($credit)
+                                                 {{$credit}} 
                                                  {{\App\CPU\Helpers::currency_symbol() }}
                                                 @else -
                                                 @endif
                                             </td>
                                             <td>
-                                                @if($item['debit'])
-                                                {{$item['debit']}} 
+                                                @if($debit)
+                                                {{$debit}} 
                                                 {{\App\CPU\Helpers::currency_symbol() }}
                                                 @else -
                                                 @endif
                                             </td>
                                             <td>{{$balance}} {{\App\CPU\Helpers::currency_symbol() }}</td>
                                         </tr>
-                                      
                                     @endforeach
                             </tbody>
                         </table>

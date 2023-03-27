@@ -14,9 +14,9 @@
                         <div class="form-group">
                             <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('customer')}}</label>
                             <select name="customer_id" class="form-control js-select2-custom" required>
-                                <option value="">---{{\App\CPU\translate('select')}}---</option>
-                                @foreach ($customers as $customer)
-                                        <option value="{{$customer->id}}">{{$customer->name}}</option>
+                                 <option value="">---{{\App\CPU\translate('select')}}---</option>
+                                @foreach ($customers->where('status',1) as $customer)
+                                 <option value="{{$customer->id}}">{{$customer->name}}</option>
                                 @endforeach
                             </select>
                         </div>

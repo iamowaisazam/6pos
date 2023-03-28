@@ -643,4 +643,6 @@
   'Select Status' => 'Select Status',
   'All' => 'All',
   'Payment' => 'Payment',
+  'account_balance' => 'Account balance',
+  'Insufficient Balance' => 'Insufficient Balance',
 );

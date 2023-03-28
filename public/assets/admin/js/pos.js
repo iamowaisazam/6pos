@@ -100,11 +100,6 @@ function submit_order(){
                 $('#order_place').submit();
             });
         
-
-        
-      
-
-
         // let payementId = $('#payment_opp').val();
         // //console.log(payementId);
         // //$('#cash_amount').removeAttr('required');

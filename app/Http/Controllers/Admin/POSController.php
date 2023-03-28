@@ -570,6 +570,11 @@ class POSController extends Controller
             $customer->balance = $customer->balance -  $order->total;
             $customer->save();
 
+            $order->payment_id = 1;
+            $order->collected_cash = 0;
+            $order->returned_cash = 0;
+            $order->save();
+
             Toastr::success(translate('Payment successfully'));
             return back();
         }
@@ -662,37 +667,40 @@ class POSController extends Controller
 
     public function order_cancel(Request $request,$id)
     {
-
+     
         $order = Order::find($id);
         $order->status = 2;
 
         if($order->payment_id == 1){
 
             $account = Account::find($request->account_id);
-            $account->total_out = $account->total_out + $order->total;
-            $account->balance = $account->balance - $order->total;
-            $account->save();
+            if($account->balance < $request->order_amount){
+                Toastr::warning(translate('Insufficient Balance'));
+                return back();
+            }
 
             $transection = new Transection;
-            $transection->tran_type = 'Income';
-            $transection->account_id = $account->id;
-            $transection->amount = $order->total;
-            $transection->description = "Payment Refund".'#'.$order->id." Order Canceled ".$request->description;
-            $transection->order_id = $order->id;
+            $transection->tran_type = 'Expense';
+            $transection->account_id= $request->account_id;
+            $transection->amount = $request->order_amount;
+            $transection->description = $request->description;
             $transection->debit = 1;
             $transection->credit = 0;
-            $transection->customer_id = $order->user_id;
-            $transection->balance = $account->balance - $order->total;
+            $transection->balance = $account->balance - $request->order_amount;
             $transection->date = $request->date;
+            $transection->customer_id = null;
+            $transection->order_id = $order->id;
             $transection->save();
+
+            $account->total_out = $account->total_out + $request->order_amount;
+            $account->balance = $account->balance - $request->order_amount;
+            $account->save();
+
         }
 
         $order->payment_id = 1;
         $order->save();
 
-        $customer = Customer::find($order->user_id);
-        $customer->balance = $customer->balance + $order->total;
-        $customer->save();
 
         $details = OrderDetail::where('order_id',$id)->get();
         foreach ($details as $key => $value) {

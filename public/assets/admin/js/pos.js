@@ -70,6 +70,7 @@ document.addEventListener("keydown", function(event) {
 
 "use strict";
 function submit_order(){
+
     $("#search-box").css("display", "none");
     let cus_id = $('#customer').val();
     $('#customer_id').val(cus_id);
@@ -84,16 +85,36 @@ function submit_order(){
         });
         //console.log("null");
     }else{
-        let payementId = $('#payment_opp').val();
-        //console.log(payementId);
-        //$('#cash_amount').removeAttr('required');
-        if(payementId == 1)
-        {
-            let tt = $('#total_price').text();
-            //console.log(tt);
-            $('#cash_amount').attr({'min': tt,'required':true});
-        }
-        $("#paymentModal").modal();
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do You Really Want To Create Order?",
+            type: 'warning',
+            showCancelButton: true,
+            cancelButtonColor: 'default',
+            confirmButtonColor: '#161853',
+            cancelButtonText: 'No',
+            confirmButtonText: 'Yes',
+            reverseButtons: true
+            }).then((result) => {
+                $('#order_place').submit();
+            });
+        
+
+        
+      
+
+
+        // let payementId = $('#payment_opp').val();
+        // //console.log(payementId);
+        // //$('#cash_amount').removeAttr('required');
+        // if(payementId == 1)
+        // {
+        //     let tt = $('#total_price').text();
+        //     //console.log(tt);
+        //     $('#cash_amount').attr({'min': tt,'required':true});
+        // }
+        // $("#paymentModal").modal();
     }
 }
 

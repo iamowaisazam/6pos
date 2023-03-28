@@ -640,4 +640,7 @@
   'Returned amount' => 'Returned amount',
   'Payment Complete successfully' => 'Payment Complete successfully',
   'Payment successfully' => 'Payment successfully',
+  'Select Status' => 'Select Status',
+  'All' => 'All',
+  'Payment' => 'Payment',
 );

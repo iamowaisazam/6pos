@@ -7,42 +7,98 @@
 
 @section('content')
     <div class="content container-fluid">
+
         <!-- Page Header -->
         <div class="page-header">
             <div class="row align-items-center mb-3">
                 <div class="col-sm">
                     <h1 class="page-header-title text-capitalize">{{\App\CPU\translate('pos')}} {{\App\CPU\translate('orders')}}
-                        <span
-                            class="badge badge-soft-dark ml-2">{{$orders->total()}}</span></h1>
+                        <span class="badge badge-soft-dark ml-2">{{$orders->total()}}</span></h1>
                 </div>
             </div>
         </div>
         <!-- End Page Header -->
         <!-- Card -->
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form action="{{url()->current()}}" method="GET">
+                    <div class="row m-1">
+                        <div class="form-group col-12 col-sm-3">
+                            <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('search')}} </label>
+                            <input type="text" name="search" class="form-control" value="{{request()->search}}" />
+                        </div>
+                        <div class="form-group col-12 col-sm-3">
+                            <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('customers')}} </label>
+                            <select id="customers" name="customer_id" class="form-control js-select2-custom">
+                                <option value="">Select Customer</option>
+                                @foreach ($customers as $customer) 
+                                 <option {{request()->customer_id != null && request()->customer_id == $customer->id ? 'selected' : ''}} 
+                                value="{{$customer->id}}">{{$customer->name}}</option>
+                               @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-sm-2">
+                            <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Status')}} </label>
+                            <select id="status" name="status" class="form-control js-select2-custom">
+                                <option value="">{{\App\CPU\translate('All')}}</option>
+                                
+                                <option {{request()->status != null && request()->status == 0 ?'selected' : ''}} value="0">
+                                    {{\App\CPU\translate('pending')}}</option>
+
+                                <option {{request()->status != null && request()->status == 1 ?'selected' : ''}} value="1">
+                                    {{\App\CPU\translate('complete')}}</option>
+                                
+                                <option {{request()->status != null && request()->status == 2 ?'selected' : ''}} value="2">
+                                        {{\App\CPU\translate('canceled')}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-sm-2">
+                            <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Payment')}} </label>
+                            <select id="payment" name="payment" class="form-control js-select2-custom">
+                                <option value="">{{\App\CPU\translate('All')}}</option>
+                                <option {{request()->payment != null && request()->payment == 1 ?'selected' : ''}} value="1">{{\App\CPU\translate('paid')}}</option>
+                                <option {{request()->payment != null && request()->payment == 0 ?'selected' : ''}} value="0">{{\App\CPU\translate('unpaid')}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-md-2">
+                            <label class="input-label" for="exampleFormControlInput1">{{\App\CPU\translate('Show')}} </label>
+                            <select id="tran_type" name="per_page" class="form-control js-select2-custom">
+                                <option {{request()->per_page == 10 ? 'selected' : ''}} value="10">{{\App\CPU\translate('10')}}</option>
+                                <option {{request()->per_page == 20 ? 'selected' : ''}} value="20">{{\App\CPU\translate('20')}}</option>
+                                <option {{request()->per_page == 50 ? 'selected' : ''}} value="50">{{\App\CPU\translate('50')}}</option>
+                                <option {{request()->per_page == 100 ? 'selected' : ''}} value="100">{{\App\CPU\translate('100')}}</option>
+                            </select>
+                        </div>
+                        <div class="col-12 text-center ">
+                            <button class="btn btn-primary">{{\App\CPU\translate('search')}}</button>
+                        </div>
+                   </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <!-- Header -->
             <div class="card-header">
                 <div class="row justify-content-between align-items-center flex-grow-1">
-                    <div class="col-sm-8 col-md-6 col-lg-6 mb-3 mb-lg-0">
-                        <form action="{{url()->current()}}" method="GET">
-
-                            <!-- Search -->
-                            <div class="input-group input-group-merge input-group-flush">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <i class="tio-search"></i>
-                                    </div>
-                                </div>
-                                <input type="search" name="search" class="form-control"
-                                       placeholder="{{\App\CPU\translate('search_by_order_id')}}" aria-label="Search"
-                                       value="{{ $search }}" required>
-                                <button type="submit" class="btn btn-primary">{{\App\CPU\translate('search')}}</button>
-                            </div>
-                            <!-- End Search -->
-                        </form>
+                    <div class="col-12 col-sm-3">
+                        Showing {{($orders->currentpage()-1)*$orders->perpage()+1}} to {{ $orders->currentpage()*(($orders->perpage() < $orders->total()) ? $orders->perpage(): $orders->total())}} of {{ $orders->total()}} entries
                     </div>
-
-                    <div class="col-lg-6"></div>
+                    <div class="col-12 col-sm-9 text-right">
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" 
+                              type="button"
+                              data-toggle="dropdown" 
+                              aria-expanded="false">{{\App\CPU\translate('action')}}
+                            </button>
+                            <div class="dropdown-menu">
+                                <a href="{{route('admin.customer.add')}}" class="dropdown-item btn btn-primary float-right"><i
+                                    class="tio-add-circle"></i> {{\App\CPU\translate('add_new_customer')}}
+                                 </a>
+                            </div>
+                          </div>
+                    </div>
                 </div>
                 <!-- End Row -->
             </div>
@@ -116,7 +172,7 @@
                                     <div class="dropdown-menu">
                                       <a class="dropdown-item"  onclick="print_invoice('{{$order->id}}')" >{{\App\CPU\translate('invoice')}}</a>
                                      
-                                      @if($order->status == 1)
+                                      
                                         @if($order->payment_id != 1)
                                             <a class="dropdown-item"
                                               type="button" 
@@ -124,7 +180,6 @@
                                               data-target="#customer_order_payment_form{{$order->id}}" 
                                             >{{\App\CPU\translate('make_payment')}}</a>
                                         @endif
-                                      @endif
                                       
                                       @if($order->status == 0)
                                         <a class="dropdown-item" 

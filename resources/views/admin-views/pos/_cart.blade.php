@@ -128,6 +128,10 @@ $total_tax_amount = $product_tax;
         </div>
     </div>
 </div>
+
+
+
+
 {{-- data-toggle="modal"
                     data-target="#paymentModal" --}}
 <div class="modal fade" id="add-customer" tabindex="-1">

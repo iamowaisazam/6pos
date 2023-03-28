@@ -994,17 +994,38 @@ class POSController extends Controller
 
     public function order_list(Request $request)
     {
+
         $query_param = [];
         $search = $request['search'];
-        if ($request->has('search')) {
-            $orders = Order::where('id', 'like', "%{$search}%")->paginate(Helpers::pagination_limit())->appends($search);
+        $orders = Order::query();
+
+        $search = $request['search'];
+        if ($request->has('search') && $request->search != null) {
+            $orders = $orders->where('id', 'like', '%'.$request->search.'%');
+        }
+        
+        if ($request->has('customer_id') && $request->customer_id != null) {
+            $orders = $orders->where('user_id',$request->customer_id);
+        } 
+
+        if ($request->has('status') && $request->status != null) {
+            $orders = $orders->where('status',$request->status);
+        } 
+
+        if ($request->has('payment') && $request->payment != null) {
+            $orders = $orders->where('payment_id',$request->payment);
+        } 
+
+        if($request->has('per_page') && $request->per_page != null) {
+            $orders = $orders->paginate($request->per_page);
         } else {
-            $orders = Order::latest()->paginate(Helpers::pagination_limit())->appends($search);
+            $orders = $orders->paginate(10);
         }
 
         $accounts = Account::all();
+        $customers = Customer::all();
+        return view('admin-views.pos.order.list', compact('orders', 'search','accounts','customers'));
 
-        return view('admin-views.pos.order.list', compact('orders', 'search','accounts'));
     }
 
     public function generate_invoice($id)

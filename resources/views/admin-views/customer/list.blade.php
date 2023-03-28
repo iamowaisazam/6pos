@@ -71,7 +71,6 @@
                                       aria-expanded="false">{{\App\CPU\translate('action')}}
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" >Export</a>
                                         <a href="{{route('admin.customer.add')}}" class="dropdown-item btn btn-primary float-right"><i
                                             class="tio-add-circle"></i> {{\App\CPU\translate('add_new_customer')}}
                                          </a>

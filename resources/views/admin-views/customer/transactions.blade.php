@@ -121,31 +121,42 @@
                                             $debit = 0;
                                             $sr += 1;
 
-                                            if($item->debit){
-                                                    $balance -= $item->amount; 
-                                                    $debit -= $item->amount; 
-                                            }else{
+                                            // if($item->debit){
+                                            //         $balance -= $item->amount; 
+                                            //         $debit -= $item->amount; 
+                                            // }else{
+                                            //         $balance += $item->amount; 
+                                            //         $credit += $item->amount; 
+                                            // }
+
+
+                                            if($item->tran_type == 'Receivable'){
+                                             
+                                                if($item->debit){
                                                     $balance += $item->amount; 
                                                     $credit += $item->amount; 
+                                                    
+                                                }else{
+                                                    $balance -= $item->amount; 
+                                                    $debit -= $item->amount; 
+                                                }
+
+                                            }else if($item->tran_type == 'Payable'){
+
+                                                if($item->debit){
+                                                    $balance -= $item->amount; 
+                                                    $debit -= $item->amount; 
+                                                }else{
+                                                    $balance += $item->amount; 
+                                                    $credit += $item->amount; 
+                                                }
+
+
+                                            }else if($item->tran_type == 'Income'){
+                                                $balance += $item->amount; 
+                                                $credit += $item->amount; 
                                             }
 
-                                            // if($item->tran_type == 'Receivable'){
-                                             
-                                            //     // if($item->debit){
-                                            //     //     $balance -= $item->amount; 
-                                            //     //     $debit -= $item->amount; 
-                                            //     // }else{
-                                            //     //     $balance += $item->amount; 
-                                            //     //     $credit += $item->amount; 
-                                            //     // }
-
-                                            //     // $balance -= $item->amount; 
-                                            //     // $debit += $item->amount; 
-
-                                            // }else if($item->tran_type == 'Income'){
-                                            //     // $balance += $item->amount; 
-                                            //     // $credit += $item->amount; 
-                                            // }
                                         ?>
                                         <tr>
                                             <td>{{$sr}}</td>

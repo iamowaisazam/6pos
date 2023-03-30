@@ -71,12 +71,22 @@ document.addEventListener("keydown", function(event) {
 "use strict";
 function submit_order(){
 
+    debugger
+
     $("#search-box").css("display", "none");
     let cus_id = $('#customer').val();
     $('#customer_id').val(cus_id);
     let  cart_id = $('#cart_id').val();
     $('#order_cart_id').val(cart_id);
-    //console.log(cus_id);
+
+    if($('.cart_tables tbody').children().length == 0){
+        toastr.warning('Cart Is Empty', {
+            CloseButton: true,
+            ProgressBar: true
+        });
+        return false;
+    }
+    
     if(cus_id == 'null')
     {
         toastr.warning('Please, Select Customer First.!', {
@@ -97,7 +107,11 @@ function submit_order(){
             confirmButtonText: 'Yes',
             reverseButtons: true
             }).then((result) => {
-                $('#order_place').submit();
+                // console.log(result);
+
+                if(result.value){
+                  $('#order_place').submit();
+                }
             });
         
         // let payementId = $('#payment_opp').val();

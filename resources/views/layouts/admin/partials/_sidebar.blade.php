@@ -152,7 +152,7 @@
                                         <span class="text-truncate">{{\App\CPU\translate('stock_limit_products')}}</span>
                                     </a>
                                 </li>
-                                <li class="nav-item {{Request::is('admin/product/bulk-import')?'active':''}}">
+                                {{-- <li class="nav-item {{Request::is('admin/product/bulk-import')?'active':''}}">
                                     <a class="nav-link " href="{{route('admin.product.bulk-import')}}"
                                        title="{{\App\CPU\translate('bulk_import')}}">
                                         <span class="tio-circle nav-indicator-icon"></span>
@@ -165,7 +165,7 @@
                                         <span class="tio-circle nav-indicator-icon"></span>
                                         <span class="text-truncate">{{\App\CPU\translate('bulk_export')}}</span>
                                     </a>
-                                </li>
+                                </li> --}}
                             </ul>
                         </li>
                         <!-- Product Pages -->

@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="{{ asset('public/assets/admin') }}/css/custom.css" />
-<div class="d-flex flex-row style-one-cart">
-    <table class="table table-bordered">
+<div class=" d-flex flex-row style-one-cart">
+    <table class="cart_tables table table-bordered">
         <thead class="text-muted">
             <tr>
                 <th scope="col" class="w-25">{{ \App\CPU\translate('item') }}</th>

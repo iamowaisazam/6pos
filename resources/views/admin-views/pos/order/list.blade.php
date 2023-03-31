@@ -79,7 +79,6 @@
         </div>
 
         <div class="card">
-            <!-- Header -->
             <div class="card-header">
                 <div class="row justify-content-between align-items-center flex-grow-1">
                     <div class="col-12 col-sm-3">
@@ -93,14 +92,13 @@
                               aria-expanded="false">{{\App\CPU\translate('action')}}
                             </button>
                             <div class="dropdown-menu">
-                                <a href="{{route('admin.customer.add')}}" class="dropdown-item btn btn-primary float-right"><i
-                                    class="tio-add-circle"></i> {{\App\CPU\translate('add_new_customer')}}
-                                 </a>
+                                <a href="{{route('admin.pos.export')}}?search={{request()->search}}&customer_id={{request()->customer_id}}&status={{request()->status}}&payment={{request()->payment}}&per_page={{request()->per_page}}" 
+                                class="dropdown-item btn btn-primary float-right">
+                                {{\App\CPU\translate('export')}}</a>
                             </div>
-                          </div>
+                        </div>
                     </div>
                 </div>
-                <!-- End Row -->
             </div>
             <!-- End Header -->
 

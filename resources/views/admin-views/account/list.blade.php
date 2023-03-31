@@ -88,14 +88,23 @@
                                                 <a class="btn btn-white mr-1" href="{{route('admin.account.edit',[$account['id']])}}">
                                                     <span class="tio-edit"></span>
                                                 </a>
-                                                @if(env('APP_MODE') == 'live')
-                                                <a class="btn btn-white mr-1" href="javascript:"
-                                                    onclick="form_alert('account-{{$account['id']}}','Want to delete this account?')"><span class="tio-delete"></span></a>
+                                                
+                                                @if($account->status == 1)
+                                                   <a class="btn btn-danger mr-1" href="javascript:"
+                                                    onclick="form_alert('account-{{$account['id']}}','Want to Deactivete this account?')"><span class="tio-delete"></span></a>
+                                                    @else
+
+                                                    <a class="btn btn-success mr-1" href="javascript:"
+                                                    onclick="form_alert('account-{{$account['id']}}','Want to delete this Activate?')"><span class="tio-delete"></span></a>
+
+
+                                                 @endif
                                                     <form action="{{route('admin.account.delete',[$account['id']])}}"
                                                             method="post" id="account-{{$account['id']}}">
                                                         @csrf @method('delete')
                                                     </form>
-                                                    @endif
+                                                
+                                    
                                             @else
                                             <span>{{\App\CPU\translate('default')}}</span>
                                             @endif

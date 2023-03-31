@@ -645,4 +645,6 @@
   'Payment' => 'Payment',
   'account_balance' => 'Account balance',
   'Insufficient Balance' => 'Insufficient Balance',
+  'Account Deactivated successfully' => 'Account Deactivated successfully',
+  'net_profit' => 'Net profit',
 );

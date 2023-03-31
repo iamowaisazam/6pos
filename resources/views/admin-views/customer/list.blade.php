@@ -71,9 +71,12 @@
                                       aria-expanded="false">{{\App\CPU\translate('action')}}
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a href="{{route('admin.customer.add')}}" class="dropdown-item btn btn-primary float-right"><i
-                                            class="tio-add-circle"></i> {{\App\CPU\translate('add_new_customer')}}
-                                         </a>
+                                        <a href="{{route('admin.customer.add')}}" class="dropdown-item btn btn-primary float-right">{{\App\CPU\translate('add_new_customer')}}
+                                        </a>
+                                        <a 
+                                         href="{{route('admin.customer.export')}}?search={{request()->search}}&status={{request()->status}}&per_page={{request()->per_page}}" 
+                                         class="dropdown-item btn btn-primary float-right">{{\App\CPU\translate('export')}}
+                                        </a>
                                     </div>
                                   </div>
                             </div>
@@ -95,6 +98,7 @@
                                 <th>{{ \App\CPU\translate('payable') }}</th>
                                 <th class="text-center" >{{ \App\CPU\translate('balance') }}</th>
                                 <th>{{ \App\CPU\translate('income') }}</th>
+                                <th>{{ \App\CPU\translate('net_profit') }}</th>
                                 <th>{{\App\CPU\translate('action')}}</th>
                             </tr>
                             </thead>
@@ -108,6 +112,7 @@
                                 $income = 0;
                                 $receivable = 0;
                                 $payable = 0;
+                                $profit = 0;
 
                                 $receivable += $customer->rc;
                                 $receivable -= $customer->rd;
@@ -117,6 +122,10 @@
 
                                 $income += $customer->income_credit;
                                 $income -= $customer->income_debit;
+
+
+                                $profit = $income + $receivable;
+                                $profit = $profit - $payable;
 
                            ?>
                       
@@ -150,6 +159,9 @@
                                     </td>
                                     <td>
                                         {{$income  . ' ' . \App\CPU\Helpers::currency_symbol()}}
+                                    </td>
+                                    <td>
+                                        {{$profit  . ' ' . \App\CPU\Helpers::currency_symbol()}}
                                     </td>
                                     <td>
                                         <div class="dropdown">

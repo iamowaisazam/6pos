@@ -106,6 +106,7 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::get('orders', 'POSController@order_list')->name('orders');
             Route::get('order-details/{id}', 'POSController@order_details')->name('order-details');
             Route::get('reset', 'POSController@reset')->name('reset');
+            Route::get('orders/export', 'POSController@export')->name('export');
 
             Route::get('make-payment/{id}', 'POSController@make_payment')->name('make-payment');
             Route::get('order-complete/{id}', 'POSController@order_complete')->name('order-complete');
@@ -163,6 +164,8 @@ Route::group(['namespace'=>'Admin', 'as' => 'admin.', 'prefix'=>'admin'] ,functi
             Route::get('add','CustomerController@index')->name('add');
             Route::post('store', 'CustomerController@store')->name('store');
             Route::get('list', 'CustomerController@list')->name('list');
+            Route::get('export', 'CustomerController@export')->name('export');
+            Route::get('detail_export/{id}', 'CustomerController@detail_export')->name('detail_export');
 
             Route::get('transaction/{id}', 'CustomerController@customers_transaction')->name('transactions');
             Route::get('status/{id}', 'CustomerController@status')->name('status');

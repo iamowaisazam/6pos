@@ -12,6 +12,9 @@ use App\Models\Account;
 use App\Models\SaleInvoice;
 use App\Models\Transection;
 use function App\CPU\translate;
+use Rap2hpoutre\FastExcel\FastExcel;
+
+
 use DB;
 
 class CustomerController extends Controller
@@ -513,6 +516,171 @@ class CustomerController extends Controller
         Toastr::success(translate('Customer balance updated successfully'));
         return back();
     }
+
+    public function export(Request $request)
+    {
+        
+        $customers = Customer::query();
+        $customers = $customers->addSelect(['rc' =>  function ($query) use($request){
+
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            $tr = $tr->where('credit',1)
+            ->whereIn('tran_type',['receivable']);
+        }])
+        ->addSelect(['rd' =>  function ($query) use($request){
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            $tr = $tr->where('debit',1)
+            ->whereIn('tran_type',['receivable']);
+        }])
+        ->addSelect(['pc' =>  function ($query) use($request){
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            $tr = $tr->where('credit',1)
+            ->whereIn('tran_type',['Payable']);
+        }])
+        ->addSelect(['pd' =>  function ($query) use($request){
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            $tr = $tr->where('debit',1)
+            ->whereIn('tran_type',['Payable']);
+        }])
+        ->addSelect(['income_credit' =>  function ($query) use($request){
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            $tr = $tr->where('credit',1)
+            ->whereIn('tran_type',['Income']);
+        }])
+        ->addSelect(['income_debit' =>  function ($query) use($request){
+            $tr = $query->select(DB::raw('sum(amount)'))
+            ->from('transections')
+            ->whereColumn('customer_id','customers.id');
+            $tr = $tr->where('debit',1)
+            ->whereIn('tran_type',['Income']);
+        }]);
+
+        $search = $request['search'];
+        if ($request->has('search') && $request->search != null) {
+            $customers = $customers->where('name', 'like', '%'.$request->search.'%')
+            ->orwhere('mobile', 'like', '%'.$request->search.'%');
+        } 
+
+        if ($request->has('status') && $request->status != null) {
+            $customers = $customers->where('status',$request->status);
+        } 
+
+        if ($request->has('per_page') && $request->per_page != null) {
+            $customers = $customers->limit($request->per_page);
+        } else{
+            $customers = $customers->limit(10);
+        }
+
+
+        $response = collect();
+        foreach($customers->get() as $key => $customer){
+
+          
+            $income = 0;
+            $receivable = 0;
+            $payable = 0;
+            $profit = 0;
+
+            $receivable += $customer->rc;
+            $receivable -= $customer->rd;
+
+            $payable += $customer->pc;
+            $payable -= $customer->pd;
+
+            $income += $customer->income_credit;
+            $income -= $customer->income_debit;
+
+            $profit = $income + $receivable;
+            $profit = $profit - $payable;
+
+            $response->add([
+               "Id" => $customer->id,
+               "Name" => $customer->name,
+               "Receivable" => $receivable,
+               "Payable" => $payable,
+               "Income" => $income,
+               "Profit" => $profit,
+               "Balance" => $customer->balance,
+            ]);
+
+        }
+
+        return (new FastExcel($response))->download('customers.xlsx');
+   }
+
+     public function detail_export(Request $request,$id)
+    {
+
+        $customer = Customer::find($id);
+        $data = Transection::where('customer_id',$id);
+
+        if($request->type != null){    
+            $data = $data->whereIn('tran_type',explode(',',$request->type));
+        }
+
+        if($request->from != null){
+            $data = $data->where('date', '>=', $request->from);
+        }
+
+        if($request->to != null){
+            $data = $data->where('date', '<=', $request->to);
+        }
+    
+        $response = collect();
+        $sr = 0;
+        $balance = 0;
+
+        foreach($data->get() as $key => $item){
+
+            $credit = 0;
+            $debit = 0;
+            $sr += 1;
+
+            if($item->tran_type == 'Receivable'){
+                if($item->debit){
+                    $balance += $item->amount; 
+                    $credit += $item->amount;    
+                }else{
+                    $balance -= $item->amount; 
+                    $debit -= $item->amount; 
+                }
+            }else if($item->tran_type == 'Payable'){
+                if($item->debit){
+                    $balance -= $item->amount; 
+                    $debit -= $item->amount; 
+                }else{
+                    $balance += $item->amount; 
+                    $credit += $item->amount; 
+                }
+            }else if($item->tran_type == 'Income'){
+                $balance += $item->amount; 
+                $credit += $item->amount; 
+            }
+
+            $response->add([
+               "Id" => $sr,
+               "Date" => $item->date,
+               "Type" => $item->tran_type,
+               "Description" => $item->description,
+               "Credit" => $credit ?? '-',
+               "Debit" => $debit ?? '-',
+               "Balance" => $balance,
+            ]);
+
+        }
+
+        return (new FastExcel($response))->download('customers.xlsx');
+   }
 
 
 }

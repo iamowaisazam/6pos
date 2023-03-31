@@ -77,9 +77,14 @@ class AccountController extends Controller
     public function delete($id)
     {
         $account = Account::find($id);
-        $account->delete();
+        if($account->status == 1){
+            $account->status = 0;
+        }else{
+            $account->status = 1;
+        }
+        $account->save();
 
-        Toastr::success(translate('Account deleted successfully'));
+        Toastr::success(translate('Account Deactivated successfully'));
         return back();
     }
 

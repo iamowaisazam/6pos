@@ -17,6 +17,8 @@ use Brian2694\Toastr\Facades\Toastr;
 use function App\CPU\translate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Rap2hpoutre\FastExcel\FastExcel;
+
 
 class POSController extends Controller
 {
@@ -1161,4 +1163,66 @@ class POSController extends Controller
             'view' => view('admin-views.pos._cart', compact('cart_id'))->render()
         ]);
     }
+
+
+    public function export(Request $request){
+
+        $query_param = [];
+        $search = $request['search'];
+        $orders = Order::query();
+
+        $search = $request['search'];
+        if ($request->has('search') && $request->search != null) {
+            $orders = $orders->where('id', 'like', '%'.$request->search.'%');
+        }
+        
+        if ($request->has('customer_id') && $request->customer_id != null) {
+            $orders = $orders->where('user_id',$request->customer_id);
+        } 
+
+        if ($request->has('status') && $request->status != null) {
+            $orders = $orders->where('status',$request->status);
+        } 
+
+        if ($request->has('payment') && $request->payment != null) {
+            $orders = $orders->where('payment_id',$request->payment);
+        } 
+
+        if($request->has('per_page') && $request->per_page != null) {
+            $orders = $orders->limit($request->per_page);
+        } else {
+            $orders = $orders->limit(10);
+        }
+
+        $response = collect();
+        $sr = 0;
+        $balance = 0;
+
+        foreach($orders->get() as $key => $item){
+
+            if($item->status == 1){
+                $status = "Complete";
+            }elseif($item->status == 2){
+                $status = "Canceled";
+            }else{
+                $status = "Pending";
+            }
+
+            $response->add([
+                "id" => $item->id,
+                "date" => $item->created_at->format('d-m-y'),
+                "status" => $status,
+                "customer" => $item->cus->name,
+                "payment_status" => $item->payment_id ? 'Paid' : 'Unpaid',
+                "subtotal" => $item->order_amount,
+                "tax" => $item->total_tax,
+                "discount" => $item->extra_discount ?? 0,
+                "grand_total" => $item->total,
+           ]);
+
+        }
+
+        return (new FastExcel($response))->download('orders.xlsx');
+    }
+
 }

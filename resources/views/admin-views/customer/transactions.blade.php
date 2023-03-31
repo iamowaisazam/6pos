@@ -10,6 +10,9 @@
 @section('content')
 <?php 
     $types = request()->type == null ? [] : request()->type;
+
+
+    
 ?>
     <div class="content container-fluid">
         <!-- Page Header -->
@@ -71,7 +74,7 @@
                         </form>
                     </div>
                 </div>
-
+                
                 <div class="card">
                     <!-- Header -->
                     <div class="card-header">
@@ -87,7 +90,8 @@
                                       aria-expanded="false">{{\App\CPU\translate('action')}}
                                     </button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" >Export</a>
+                                        <a 
+                                        href="{{route('admin.customer.detail_export',[$customer->id])}}?type={{implode(',',$types)}}&from={{request()->from}}&to={{request()->to}}" class="dropdown-item" >Export</a>
                                     </div>
                                   </div>
                             </div>
